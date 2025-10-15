@@ -12,7 +12,7 @@ const AuthMobile =(()=>{
 
     const register = async(username,password)=>{
         await delay(500);
-        if(users.find(u=>username ===username)){
+        if(users.find(u=>u.username ===username)){
             return {success:false,message:"User đã tồn tại!"};
         }
         users.push({username,password: hashPassword(password)});
@@ -20,13 +20,27 @@ const AuthMobile =(()=>{
         return {success:true,message:"Đăng ký thành công!"};
     }
 
+    const login = async(username,password)=>{
+        await delay(500);
+        const user = user.find(u =>u.username===username);
+        if(!user){
+            return {success:false,message:"Không tìm thấy user!"}
+        }
+        if(user.password !==hashPassword(password)){
+            return {success: false,message:"Sai mật khẩu!"}
+        }
+        localStorage.setItem('session',JSON.stringify({username})){
+            return {success:true,message:"Đăng nhập thành công!"}
+        }
+    }
 
 
 
 
 
     return{
-        register
+        register,
+        login
     };
 })();
 
