@@ -29,10 +29,23 @@ const AuthMobile =(()=>{
         if(user.password !==hashPassword(password)){
             return {success: false,message:"Sai mật khẩu!"}
         }
-        localStorage.setItem('session',JSON.stringify({username})){
+        localStorage.setItem('session',JSON.stringify({username}))
             return {success:true,message:"Đăng nhập thành công!"}
-        }
     }
+
+    const isLoggedIn = ()=>{
+        return !!localStorage.getItem("session");
+    };
+
+    const currentUser =()=>{
+        const session =JSON.parse(localStorage.getItem("session"));
+        return session ? session.username : null;
+    };
+
+    const logout = ()=>{
+        localStorage.removeItem("session");
+    }
+
 
 
 
@@ -40,7 +53,10 @@ const AuthMobile =(()=>{
 
     return{
         register,
-        login
+        login,
+        isLoggedIn,
+        currentUser,
+        logout
     };
 })();
 
