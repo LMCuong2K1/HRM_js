@@ -79,7 +79,8 @@ const renderEmployeeList = () => {
   ul.innerHTML = '';
   list.forEach(emp => {
     const li = document.createElement('li');
-    li.textContent = `ID: ${emp.id}, Tên: ${emp.name}, Phòng ban: ${emp.department}, Lương: ${emp.salary}`;
+    li.innerHTML = `ID: ${emp.id}, Tên: ${emp.name}, Phòng ban: ${emp.department}, Lương: ${emp.salary}
+    <button onclick ="editEmployee(${emp.id})">Sửa</button>`;
     ul.appendChild(li);
   });
   renderEmployeeList();

@@ -24,6 +24,17 @@ const EmployeeDbModule = (() => {
         }
         return null;
     }
+
+    let editModeId = null;
+    const editEmployee = (id) => {
+        const emp = EmployeeDbModule.getAllEmployees().find(e => e.id === id);
+        if (!emp) return;
+        document.getElementById('empName').value = emp.name;
+        document.getElementById('empDept').value = emp.department;
+        document.getElementById('empSalary').value = emp.salary;
+        editModeId = id;
+        document.getElementById('addEmployeeForm').textContent = 'Cập nhật';
+    }
     return {
         getAllEmployees,
         addEmployee,
