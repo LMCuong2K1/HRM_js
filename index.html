@@ -1,21 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <h1>HRM Project</h1>
-    <!-- Form đăng nhập -->
-<form id="loginForm">
+  <h1>HRM Project</h1>
+  <!-- Form đăng nhập -->
+  <form id="loginForm">
     <h2>Đăng nhập</h2>
     <input type="text" id="loginUsername" placeholder="Tên đăng nhập" required />
     <input type="password" id="loginPassword" placeholder="Mật khẩu" required />
     <button type="submit">Đăng nhập</button>
   </form>
-  
+
   <!-- Form đăng ký -->
   <form id="registerForm">
     <h2>Đăng ký</h2>
@@ -23,13 +25,14 @@
     <input type="password" id="registerPassword" placeholder="Mật khẩu" required />
     <button type="submit">Đăng ký</button>
   </form>
-  
+
   <!-- Div dashboard sẽ hiện khi login thành công -->
   <div id="dashboard" style="display:none;">
     <h2>Xin chào <span id="userDisplay"></span></h2>
     <button id="logoutBtn">Đăng xuất</button>
   </div>
-  
-    <script type= "module" src="app.js"></script>
+
+  <script type="module" src="app.js"></script>
 </body>
+
 </html>
