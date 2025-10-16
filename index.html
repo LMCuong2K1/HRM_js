@@ -32,6 +32,15 @@
     <button id="logoutBtn">Đăng xuất</button>
   </div>
 
+  <form id="addEmployeeForm">
+    <h3>Thêm nhân viên mới</h3>
+    <input type="text" id="empName" placeholder="Tên nhân viên" required />
+    <input type="text" id="empDept" placeholder="Phòng ban" required />
+    <input type="number" id="empSalary" placeholder="Lương" required />
+    <button type="submit">Thêm</button>
+  </form>
+  <ul id="employeeList"></ul> <!-- Hiển thị danh sách nhân viên -->
+
   <script type="module" src="app.js"></script>
 </body>
 
