@@ -15,9 +15,19 @@ const EmployeeDbModule = (() => {
         return employee;
     }
 
+    const updateEmployee = (id, updateObj) => {
+        const index = employees.findIndex(e => e.id === id);
+        if (index !== -1) {
+            employees[index] = { ...employees[index], ...updateObj, id };
+            localStorage.setItem("employees", JSON.stringify(employees));
+            return employees[index];
+        }
+        return null;
+    }
     return {
         getAllEmployees,
-        addEmployee
+        addEmployee,
+        updateEmployee
     }
 })();
 

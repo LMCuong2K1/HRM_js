@@ -1,5 +1,5 @@
 import AuthModule from "./authModule.js";
-import EmployeeDbModule from "./EmploeeDbModule.js";
+import EmployeeDbModule from "./EmployeeDbModule.js";
 
 console.log("AuthModule:", AuthModule);
 
@@ -56,7 +56,7 @@ console.log("EmployeeDbModule:", EmployeeDbModule);
 
 document.getElementById('addEmployeeForm').onsubmit = (e) => {
   e.preventDefault();
-  const name = document.getElementById('empName').ariaValueMax.trim();
+  const name = document.getElementById('empName').value.trim();
   const department = document.getElementById('empDept').value.trim();
   const salary = parseFloat(document.getElementById('empSalary').value);
   if (!name || !department || !salary) {
