@@ -41,6 +41,22 @@
     <button type="button" id="cancelEditBtn" style="display:none;">Hủy</button>
   </form>
   
+  <!-- Trong file index.html, bên trong div#dashboard -->
+<div id="dashboard" style="display: none;">
+  <h2>Dashboard</h2>
+  <p>Xin chào, <span id="userDisplay"></span>! <button id="logoutBtn">Đăng xuất</button></p>
+
+  <!-- Ô tìm kiếm MỚI -->
+  <div id="employee-controls">
+      <h3>Tìm kiếm nhân viên</h3>
+      <input type="text" id="searchInput" placeholder="Nhập tên nhân viên để tìm..." />
+  </div>
+
+  <!-- Form thêm nhân viên và danh sách giữ nguyên -->
+  <form id="addEmployeeForm"> ... </form>
+  <ul id="employeeList"></ul>
+</div>
+
   <ul id="employeeList"></ul> <!-- Hiển thị danh sách nhân viên -->
 
   <script type="module" src="app.js"></script>

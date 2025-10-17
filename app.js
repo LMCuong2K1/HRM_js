@@ -74,42 +74,42 @@ if (AuthModule.isLoggedIn()) {
 
 console.log("EmployeeDbModule:", EmployeeDbModule);
 
-addEmployeeForm.onsubmit = (e) => {
-  e.preventDefault();
-  const name = document.getElementById('empName').value.trim();
-  const department = document.getElementById('empDept').value.trim();
-  const salary = parseFloat(document.getElementById('empSalary').value);
-  if (!name || !department || !salary) {
-    alert("Vui lòng điền đầy đủ thông tin!");
-    return;
-  }
-  const newEmployee = {
-    name,
-    department,
-    salary
-  }
+// addEmployeeForm.onsubmit = (e) => {
+//   e.preventDefault();
+//   const name = document.getElementById('empName').value.trim();
+//   const department = document.getElementById('empDept').value.trim();
+//   const salary = parseFloat(document.getElementById('empSalary').value);
+//   if (!name || !department || !salary) {
+//     alert("Vui lòng điền đầy đủ thông tin!");
+//     return;
+//   }
+//   const newEmployee = {
+//     name,
+//     department,
+//     salary
+//   }
 
-  if (editModeId) {
-    EmployeeDbModule.updateEmployee(editModeId, { name, department, salary });
-    alert("Cập nhật thành công!");
-    editModeId = null;
-    addEmployeeForm.textContent = 'Thêm';
-  }
-  else {
-    const result = EmployeeDbModule.addEmployee(newEmployee);
-    alert(`Đã thêm nhân viên: ${result.name} với ID: ${result.id}`);
-  }
-  document.getElementById('empName').value = '';
-  document.getElementById('empDept').value = '';
-  document.getElementById('empSalary').value = '';
-  renderEmployeeList();
-};
+//   if (editModeId) {
+//     EmployeeDbModule.updateEmployee(editModeId, { name, department, salary });
+//     alert("Cập nhật thành công!");
+//     editModeId = null;
+//     addEmployeeForm.textContent = 'Thêm';
+//   }
+//   else {
+//     const result = EmployeeDbModule.addEmployee(newEmployee);
+//     alert(`Đã thêm nhân viên: ${result.name} với ID: ${result.id}`);
+//   }
+//   document.getElementById('empName').value = '';
+//   document.getElementById('empDept').value = '';
+//   document.getElementById('empSalary').value = '';
+//   renderEmployeeList();
+// };
 
-const renderEmployeeList = () => {
-  const list = EmployeeDbModule.getAllEmployees();
+const renderEmployeeList = (employeesToRender) => {
+  // const list = EmployeeDbModule.getAllEmployees();
   const ul = document.getElementById('employeeList');
   ul.innerHTML = '';
-  list.forEach(emp => {
+  employeesToRender.forEach(emp => {
     const li = document.createElement('li');
     li.textContent = `ID: ${emp.id}, Tên: ${emp.name}, Phòng ban: ${emp.department}, Lương: ${emp.salary}`;
 
@@ -190,5 +190,4 @@ function handleDelete(id) {
   }
 }
 
-renderEmployeeList();
 
