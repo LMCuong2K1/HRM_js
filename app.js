@@ -28,6 +28,13 @@ logoutBtn.addEventListener('click', () => {
   showForms();
 });
 
+document.getElementById('cancelEditBtn').onclick = () => {
+  editModeId = null;
+  document.getElementById('addEmployeeFormBtn').textContent = 'Thêm';
+  document.getElementById('cancelEditBtn').style.display = 'none';
+  document.getElementById('addEmployeeForm').reset();
+};
+
 loginForm.onsubmit = async (e) => {
   e.preventDefault();                               // Tránh reload trang
   const username = document.getElementById('loginUsername').value;
@@ -68,8 +75,20 @@ document.getElementById('addEmployeeForm').onsubmit = (e) => {
     department,
     salary
   }
-  const result = EmployeeDbModule.addEmployee(newEmployee);
-  alert(`Đã thêm nhân viên: ${result.name} với ID: ${result.id}`);
+
+  if (editModeId) {
+    EmployeeDbModule.updateEmployee(editModeId, { name, department, salary });
+    alert("Cập nhật thành công!");
+    editModeId = null;
+    document.getElementById('addEmployeeForm').textContent = 'Thêm';
+  }
+  else {
+    const result = EmployeeDbModule.addEmployee(newEmployee);
+    alert(`Đã thêm nhân viên: ${result.name} với ID: ${result.id}`);
+  }
+  document.getElementById('empName').value = '';
+  document.getElementById('empDept').value = '';
+  document.getElementById('empSalary').value = '';
   renderEmployeeList();
 };
 
@@ -79,9 +98,14 @@ const renderEmployeeList = () => {
   ul.innerHTML = '';
   list.forEach(emp => {
     const li = document.createElement('li');
-    li.innerHTML = `ID: ${emp.id}, Tên: ${emp.name}, Phòng ban: ${emp.department}, Lương: ${emp.salary}
-    <button onclick ="editEmployee(${emp.id})">Sửa</button>`;
+    li.textContent = `ID: ${emp.id}, Tên: ${emp.name}, Phòng ban: ${emp.department}, Lương: ${emp.salary}`;
+
+    const editBtn = document.createElement('button');
+    editBtn.textContent = 'Sửa';
+    editBtn.onclick = () => editEmployee(emp.id);
+    li.appendChild(editBtn);
     ul.appendChild(li);
   });
   renderEmployeeList();
 }
+

@@ -34,6 +34,7 @@ const EmployeeDbModule = (() => {
         document.getElementById('empSalary').value = emp.salary;
         editModeId = id;
         document.getElementById('addEmployeeForm').textContent = 'Cập nhật';
+        document.getElementById('cancelEditBtn').style.display = 'inline-block';
     }
     return {
         getAllEmployees,
