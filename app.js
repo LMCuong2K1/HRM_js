@@ -1,5 +1,6 @@
 import AuthModule from "./authModule.js";
 import EmployeeDbModule from "./EmployeeDbModule.js";
+import DepartmentModule from './departmentModule.js';
 
 // --- PHẦN 1: KHAI BÁO BIẾN VÀ LẤY DOM ELEMENT ---
 const loginForm = document.getElementById('loginForm');
@@ -155,6 +156,61 @@ registerForm.onsubmit = async (e) => {
     alert(result.message);
 };
 
+// Hàm để chuyển đổi giữa các view
+const activateView = (viewId) => {
+  document.querySelectorAll('.view').forEach(view => {
+      view.style.display = 'none';
+  });
+  document.getElementById(viewId).style.display = 'block';
+};
+
+// Lắng nghe sự kiện click trên menu
+document.getElementById('main-menu').addEventListener('click', (e) => {
+  e.preventDefault();
+  if (e.target.tagName === 'A') {
+      const moduleName = e.target.dataset.module;
+      activateView(`${moduleName}-view`);
+  }
+});
+// Trong app.js
+
+
+const renderDepartmentView = () => {
+    const container = document.getElementById('departments-view');
+    container.innerHTML = `
+        <h3>Quản lý Phòng ban</h3>
+        <form id="dept-form">
+            <input type="text" id="dept-name" placeholder="Tên phòng ban mới" required />
+            <button type="submit">Thêm phòng ban</button>
+        </form>
+        <ul id="dept-list"></ul>
+    `;
+
+    const listEl = container.querySelector('#dept-list');
+    const formEl = container.querySelector('#dept-form');
+
+    const refreshList = () => {
+        listEl.innerHTML = '';
+        DepartmentModule.getAll().forEach(dept => {
+            const li = document.createElement('li');
+            li.textContent = `ID: ${dept.id} - ${dept.name}`;
+            listEl.appendChild(li);
+        });
+    };
+
+    formEl.onsubmit = (e) => {
+        e.preventDefault();
+        const nameInput = container.querySelector('#dept-name');
+        DepartmentModule.add(nameInput.value);
+        nameInput.value = '';
+        refreshList();
+    };
+
+    refreshList(); // Hiển thị danh sách lần đầu
+};
+
+// Gọi hàm này khi người dùng click vào menu "Quản lý Phòng ban"
+// (Trong router của bạn)
 
 // --- PHẦN 4: KIỂM TRA TRẠNG THÁI ĐĂNG NHẬP KHI TẢI TRANG ---
 if (AuthModule.isLoggedIn()) {
