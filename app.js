@@ -13,6 +13,7 @@ const logoutBtn = document.getElementById('logoutBtn');
 const cancelBtn = document.getElementById('cancelEditBtn');
 const addEmployeeForm = document.getElementById('addEmployeeForm');
 const addEmployeeFormBtn = document.getElementById('addEmployeeFormBtn');
+const searchInput = document.getElementById('searchInput');
 
 if (cancelBtn) {
   cancelBtn.onclick = () => {
@@ -189,5 +190,24 @@ function handleDelete(id) {
     alert('Đã xóa nhân viên thành công!');
   }
 }
+
+const searchInput = document.getElementById('searchInput');
+
+searchInput.addEventListener('input', (e) => {
+  const searchTerm = e.target.value.toLowerCase();
+  const allEmployees = EmployeeDbModule.getAllEmployees();
+
+  // Lọc danh sách nhân viên dựa trên tên
+  const filteredEmployees = allEmployees.filter(emp => 
+    emp.name.toLowerCase().includes(searchTerm)
+  );
+
+  // Gọi hàm render với danh sách đã được lọc
+  renderEmployeeList(filteredEmployees);
+});
+
+// Cập nhật lại các lần gọi renderEmployeeList cũ
+// Ví dụ, khi khởi tạo dashboard và sau khi thêm/sửa/xóa:
+renderEmployeeList(EmployeeDbModule.getAllEmployees()); 
 
 
