@@ -23,7 +23,7 @@
 - LocalStorage API
 
 ## Demo
-🔗 [Xem Demo](https://github.com/LMCuong2K1/HRM_js.git)
+🔗 [Xem Demo](https://lmcuong2k1.github.io/HRM_js/)
 
 ## Cách chạy local
 1. Clone repository: `git clone https://github.com/LMCuong2K1/HRM_js.git`
