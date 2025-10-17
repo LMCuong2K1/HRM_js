@@ -1,3 +1,4 @@
+// file: performanceModule.js
 import EmployeeDbModule from './EmployeeDbModule.js';
 
 const PerformanceModule = (() => {
@@ -15,6 +16,10 @@ const PerformanceModule = (() => {
      * @param {string} feedback - Nhận xét
      */
     const addReview = (employeeId, rating, feedback) => {
+        if (rating < 1 || rating > 5) {
+            throw new Error('Điểm số phải từ 1 đến 5!');
+        }
+
         const newReview = {
             id: Date.now(),
             employeeId,
@@ -41,11 +46,16 @@ const PerformanceModule = (() => {
             const totalRating = empReviews.reduce((sum, review) => sum + review.rating, 0);
 
             // Tính điểm trung bình
-            const averageRating = empReviews.length > 0 ? (totalRating / empReviews.length).toFixed(2) : 'Chưa có';
+            const averageRating = empReviews.length > 0
+                ? (totalRating / empReviews.length).toFixed(2)
+                : 'Chưa có';
 
+            // ✅ Trả về đầy đủ thông tin từ employee object + thông tin đánh giá
             return {
-                employeeId: emp.id,
-                employeeName: emp.name,
+                id: emp.id,
+                name: emp.name,
+                departmentId: emp.departmentId,
+                positionId: emp.positionId,
                 reviewCount: empReviews.length,
                 averageRating: averageRating,
                 reviews: empReviews // Danh sách chi tiết các đánh giá
@@ -53,9 +63,27 @@ const PerformanceModule = (() => {
         });
     };
 
+    /**
+     * Lấy top performers (sắp xếp theo điểm trung bình cao nhất)
+     * @param {number} limit - Số lượng nhân viên cần lấy
+     */
+    const getTopPerformers = (limit = 5) => {
+        const report = getPerformanceReport();
+
+        return report
+            .filter(emp => emp.reviewCount > 0) // Chỉ lấy nhân viên có đánh giá
+            .sort((a, b) => {
+                const ratingA = parseFloat(a.averageRating) || 0;
+                const ratingB = parseFloat(b.averageRating) || 0;
+                return ratingB - ratingA; // Sắp xếp giảm dần
+            })
+            .slice(0, limit);
+    };
+
     return {
         addReview,
-        getPerformanceReport
+        getPerformanceReport,
+        getTopPerformers
     };
 })();
 
