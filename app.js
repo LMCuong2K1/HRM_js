@@ -5,6 +5,7 @@ import PositionModule from './positionModule.js';
 import SearchModule from './searchModule.js';
 import SalaryModule from './salaryModule.js';
 import DeleteEmployeeModule from './deleteEmployeeModule.js';
+import EmployeeFormModule from './employeeFormModule.js';
 
 // --- PHẦN 1: LẤY CÁC DOM ELEMENT TOÀN CỤC ---
 const authContainer = document.getElementById('auth-container');
@@ -118,19 +119,13 @@ const initEmployeesView = () => {
 
     // Hàm xử lý khi bấm nút "Sửa"
     // Hàm xử lý khi bấm nút "Sửa"
+    // Hàm xử lý khi bấm nút "Sửa", giờ chỉ gọi EmployeeFormModule
     const editEmployee = (id) => {
         const emp = EmployeeDbModule.getAllEmployees().find(e => e.id === id);
         if (!emp) return;
 
-        container.querySelector('#empName').value = emp.name;
-        container.querySelector('#empSalary').value = emp.salary;
-        // Set giá trị cho các ô select bằng ID tương ứng
-        container.querySelector('#empDept').value = emp.departmentId;
-        container.querySelector('#empPos').value = emp.positionId;
-
-        editModeId = id;
-        addEmployeeFormBtn.textContent = 'Cập nhật';
-        cancelBtn.style.display = 'inline-block';
+        editModeId = id; // Vẫn cần set id để biết là đang sửa
+        EmployeeFormModule.fillFormForEdit(emp); // Gọi module để điền form
     };
 
 
@@ -142,61 +137,8 @@ const initEmployeesView = () => {
     };
 
 
-    // Gán sự kiện cho form Thêm/Sửa
-    // Gán sự kiện cho form Thêm/Sửa
-    addEmployeeForm.onsubmit = (e) => {
-        e.preventDefault();
-        const name = container.querySelector('#empName').value.trim();
-        const departmentId = parseInt(container.querySelector('#empDept').value);
-        const positionId = parseInt(container.querySelector('#empPos').value);
-        const salary = parseFloat(container.querySelector('#empSalary').value);
-
-        // Cập nhật validation để kiểm tra cả departmentId và positionId
-        if (!name || !departmentId || !positionId || isNaN(salary)) {
-            alert('Vui lòng điền đầy đủ tất cả các trường thông tin!');
-            return;
-        }
-
-        const employeeData = { name, departmentId, positionId, salary };
-
-        if (editModeId) {
-            EmployeeDbModule.updateEmployee(editModeId, employeeData);
-            alert('Cập nhật nhân viên thành công!');
-        } else {
-            EmployeeDbModule.addEmployee(employeeData);
-            alert('Thêm nhân viên thành công!');
-        }
-
-        editModeId = null;
-        addEmployeeForm.reset();
-        addEmployeeFormBtn.textContent = 'Thêm';
-        cancelBtn.style.display = 'none';
-        renderList(EmployeeDbModule.getAllEmployees());
-    };
-
-
-    // Gán sự kiện cho nút "Hủy"
-    cancelBtn.onclick = () => {
-        editModeId = null;
-        addEmployeeForm.reset();
-        addEmployeeFormBtn.textContent = 'Thêm';
-        cancelBtn.style.display = 'none';
-    };
-
-    // Gán sự kiện cho ô tìm kiếm
-    // searchInput.addEventListener('input', (e) => {
-    //     const searchTerm = e.target.value.toLowerCase();
-    //     const allEmployees = EmployeeDbModule.getAllEmployees();
-    //     const filteredEmployees = allEmployees.filter(emp =>
-    //         emp.name.toLowerCase().includes(searchTerm)
-    //     );
-    //     renderList(filteredEmployees);
-    // });
-
     // Hiển thị danh sách nhân viên lần đầu khi view được kích hoạt
     renderList(EmployeeDbModule.getAllEmployees());
-
-    // Thêm vào cuối hàm initEmployeesView
 
     // --- LOGIC CHO TÌM KIẾM NÂNG CAO ---
     const searchForm = container.querySelector('#search-form');
