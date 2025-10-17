@@ -23,10 +23,10 @@
 - LocalStorage API
 
 ## Demo
-🔗 [Xem Demo](https://your-username.github.io/hrm-system)
+🔗 [Xem Demo](https://github.com/LMCuong2K1/HRM_js.git)
 
 ## Cách chạy local
-1. Clone repository: `git clone https://github.com/your-username/hrm-system.git`
+1. Clone repository: `git clone https://github.com/LMCuong2K1/HRM_js.git`
 2. Mở file `index.html` bằng Live Server hoặc browser
 
 ## Tài khoản demo
