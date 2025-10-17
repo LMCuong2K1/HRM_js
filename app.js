@@ -8,6 +8,7 @@ import DeleteEmployeeModule from './deleteEmployeeModule.js';
 import EmployeeFormModule from './employeeFormModule.js';
 import AttendanceModule from './attendanceModule.js';
 import LeaveModule from './leaveModule.js';
+import PerformanceModule from './performanceModule.js';
 
 // --- PHẦN 1: LẤY CÁC DOM ELEMENT TOÀN CỤC ---
 const authContainer = document.getElementById('auth-container');
@@ -176,6 +177,82 @@ const initEmployeesView = () => {
         renderList(filteredEmployees);
     };
 
+};
+
+/**
+ * Khởi tạo giao diện cho module Đánh giá Hiệu suất.
+ */
+const initPerformanceView = () => {
+    const container = document.getElementById('performance-view');
+    const employees = EmployeeDbModule.getAllEmployees();
+
+    // Render form thêm đánh giá
+    let options = employees.map(emp => `<option value="${emp.id}">${emp.name}</option>`).join('');
+
+    container.innerHTML = `
+        <h3>Đánh giá Hiệu suất</h3>
+        <form id="performanceReviewForm">
+            <h4>Thêm Đánh giá Mới</h4>
+            <select id="reviewEmployee" required>${options}</select>
+            <select id="reviewRating" required>
+                <option value="">-- Chọn điểm --</option>
+                <option value="5">5 - Xuất sắc</option>
+                <option value="4">4 - Tốt</option>
+                <option value="3">3 - Khá</option>
+                <option value="2">2 - Cần cải thiện</option>
+                <option value="1">1 - Yếu</option>
+            </select>
+            <input type="text" id="reviewFeedback" placeholder="Nhận xét chi tiết" required />
+            <button type="submit">Lưu đánh giá</button>
+        </form>
+        <hr />
+        <h4>Báo cáo Hiệu suất</h4>
+        <div id="performance-report-list"></div>
+    `;
+
+    // Render bảng báo cáo
+    renderPerformanceReport();
+
+    // Gán sự kiện cho form
+    document.getElementById('performanceReviewForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const employeeId = parseInt(document.getElementById('reviewEmployee').value);
+        const rating = parseInt(document.getElementById('reviewRating').value);
+        const feedback = document.getElementById('reviewFeedback').value;
+
+        PerformanceModule.addReview(employeeId, rating, feedback);
+        alert('Đã lưu đánh giá thành công!');
+        document.getElementById('performanceReviewForm').reset();
+        renderPerformanceReport(); // Cập nhật lại báo cáo
+    });
+};
+
+// Hàm helper để render bảng báo cáo
+const renderPerformanceReport = () => {
+    const reportContainer = document.getElementById('performance-report-list');
+    const reportData = PerformanceModule.getPerformanceReport();
+
+    const table = document.createElement('table');
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Nhân viên</th>
+                <th>Số lần đánh giá</th>
+                <th>Điểm trung bình</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${reportData.map(item => `
+                <tr>
+                    <td>${item.employeeName}</td>
+                    <td>${item.reviewCount}</td>
+                    <td><strong>${item.averageRating}</strong></td>
+                </tr>
+            `).join('')}
+        </tbody>
+    `;
+    reportContainer.innerHTML = '';
+    reportContainer.appendChild(table);
 };
 
 
@@ -519,6 +596,9 @@ const activateView = (viewId) => {
                 break;
             case 'leave-view':
                 initLeaveView();
+                break;
+            case 'performance-view':
+                initPerformanceView();
                 break;
             // Thêm các case khác cho module tương lai
         }
