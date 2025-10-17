@@ -1,19 +1,80 @@
+// file: EmployeeDbModule.js
 const EmployeeDbModule = (() => {
+    // Khởi tạo dữ liệu mẫu nếu localStorage trống
+    const initDefaultData = () => {
+        const defaultEmployees = [
+            {
+                id: 1,
+                name: 'Nguyễn Văn An',
+                departmentId: 1,
+                positionId: 1,
+                salary: 15000000,
+                hireDate: '2023-01-15',
+                bonus: 2000000,
+                deduction: 500000
+            },
+            {
+                id: 2,
+                name: 'Trần Thị Bình',
+                departmentId: 2,
+                positionId: 2,
+                salary: 25000000,
+                hireDate: '2022-06-10',
+                bonus: 5000000,
+                deduction: 1000000
+            },
+            {
+                id: 3,
+                name: 'Lê Văn Cường',
+                departmentId: 1,
+                positionId: 1,
+                salary: 18000000,
+                hireDate: '2023-03-20',
+                bonus: 3000000,
+                deduction: 800000
+            },
+            {
+                id: 4,
+                name: 'Phạm Thị Dung',
+                departmentId: 2,
+                positionId: 3,
+                salary: 12000000,
+                hireDate: '2024-01-05',
+                bonus: 1500000,
+                deduction: 300000
+            },
+            {
+                id: 5,
+                name: 'Hoàng Văn Em',
+                departmentId: 1,
+                positionId: 1,
+                salary: 16000000,
+                hireDate: '2023-09-12',
+                bonus: 2500000,
+                deduction: 600000
+            }
+        ];
+        return defaultEmployees;
+    };
 
-    let employees = JSON.parse(localStorage.getItem('employees')) || [];
+    // Kiểm tra và khởi tạo dữ liệu
+    let employees = JSON.parse(localStorage.getItem('employees'));
+    if (!employees || employees.length === 0) {
+        employees = initDefaultData();
+        localStorage.setItem('employees', JSON.stringify(employees));
+    }
 
     const getAllEmployees = () => {
         return employees;
-    }
+    };
 
     const addEmployee = (employeeObj) => {
         const newId = employees.length ? Math.max(...employees.map(e => e.id)) + 1 : 1;
         const employee = { ...employeeObj, id: newId };
         employees.push(employee);
         localStorage.setItem("employees", JSON.stringify(employees));
-
         return employee;
-    }
+    };
 
     const updateEmployee = (id, updateObj) => {
         const index = employees.findIndex(e => e.id === id);
@@ -23,37 +84,26 @@ const EmployeeDbModule = (() => {
             return employees[index];
         }
         return null;
-    }
+    };
 
     const deleteEmployee = (id) => {
-        // Lọc ra những nhân viên không có id trùng với id cần xóa
         employees = employees.filter(emp => emp.id !== id);
-        // Cập nhật lại localStorage
         localStorage.setItem("employees", JSON.stringify(employees));
-        return true; // Trả về true để báo hiệu xóa thành công
-      };
-      
-      // Đừng quên export nó ra ngoài
-      return {
+        return true;
+    };
+
+    // THÊM HÀM NÀY - đây là hàm thiếu quan trọng
+    const getEmployeeById = (id) => {
+        return employees.find(emp => emp.id === id);
+    };
+
+    return {
         getAllEmployees,
         addEmployee,
         updateEmployee,
-        deleteEmployee // Thêm vào đây
-      };
-      
-
-    // let editModeId = null;
-    // const editEmployee = (id) => {
-    //     const emp = EmployeeDbModule.getAllEmployees().find(e => e.id === id);
-    //     if (!emp) return;
-    //     document.getElementById('empName').value = emp.name;
-    //     document.getElementById('empDept').value = emp.department;
-    //     document.getElementById('empSalary').value = emp.salary;
-    //     editModeId = id;
-    //     document.getElementById('addEmployeeForm').textContent = 'Cập nhật';
-    //     document.getElementById('cancelEditBtn').style.display = 'inline-block';
-    // }
-
+        deleteEmployee,
+        getEmployeeById
+    };
 })();
 
 export default EmployeeDbModule;

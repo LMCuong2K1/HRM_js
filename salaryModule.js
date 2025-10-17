@@ -12,7 +12,8 @@ const SalaryModule = (() => {
     const calculateNetSalary = (employee) => {
         const bonus = employee.bonus || 0;
         const deduction = employee.deduction || 0;
-        return employee.salary + bonus - deduction;
+        const salary = employee.salary || 0;
+        return salary + bonus - deduction;
     };
 
     /**
@@ -21,31 +22,34 @@ const SalaryModule = (() => {
      */
     const generatePayrollReport = () => {
         const employees = EmployeeDbModule.getAllEmployees();
-        
         const report = employees.map(emp => {
-            const department = DepartmentModule.getAll().find(d => d.id === emp.departmentId)?.name || 'N/A';
-            const position = PositionModule.getAll().find(p => p.id === emp.positionId)?.title || 'N/A';
+            const department = DepartmentModule.getById(emp.departmentId);
+            const position = PositionModule.getById(emp.positionId);
+
+            // Đảm bảo tất cả giá trị đều là số, không phải undefined
+            const salary = emp.salary || 0;
+            const bonus = emp.bonus || 0;
+            const deduction = emp.deduction || 0;
             const netSalary = calculateNetSalary(emp);
 
             return {
                 id: emp.id,
                 name: emp.name,
-                department: department,
-                position: position,
-                baseSalary: emp.salary,
-                bonus: emp.bonus || 0,
-                deduction: emp.deduction || 0,
+                department: department ? department.name : 'N/A',
+                position: position ? position.title : 'N/A',
+                salary: salary,
+                bonus: bonus,
+                deduction: deduction,
                 netSalary: netSalary
             };
         });
-
         return report;
     };
 
     return {
+        calculateNetSalary,
         generatePayrollReport
     };
 })();
 
 export default SalaryModule;
-
