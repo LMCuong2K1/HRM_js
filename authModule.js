@@ -1,7 +1,9 @@
 // file: authModule.js
+
 const AuthModule = (() => {
     const KEY = 'users';
     const SESSION_KEY = 'session';
+
     const hashPassword = (password) => {
         let hash = 0;
         for (let i = 0; i < password.length; i++) {
@@ -12,26 +14,42 @@ const AuthModule = (() => {
         return hash;
     };
 
-    // Khởi tạo users
-    let users = JSON.parse(localStorage.getItem(KEY)) || [];
-    if (users.length === 0) {
-        const defaultAdmin = {
-            username: 'admin',
-            password: hashPassword('12345')
-        };
-        users.push(defaultAdmin);
+    // ✅ HELPER: Load users FRESH từ localStorage mỗi lần
+    const _getUsers = () => {
+        return JSON.parse(localStorage.getItem(KEY)) || [];
+    };
+
+    // ✅ HELPER: Save users vào localStorage
+    const _saveUsers = (users) => {
         localStorage.setItem(KEY, JSON.stringify(users));
-        console.log('✅ Đã tạo admin mặc định');
-    }
+    };
+
+    // ✅ KHỞI TẠO: Chỉ chạy 1 lần khi module load
+    const _initDefaultAdmin = () => {
+        const users = _getUsers();
+        if (users.length === 0) {
+            const defaultAdmin = {
+                username: 'admin',
+                password: hashPassword('12345')
+            };
+            users.push(defaultAdmin);
+            _saveUsers(users);
+            console.log('✅ Đã tạo admin mặc định');
+        }
+    };
+    _initDefaultAdmin(); // Gọi init ngay khi load module
 
     const login = async (username, password) => {
         return new Promise((resolve) => {
             setTimeout(() => {
+                const users = _getUsers(); // ✅ Load fresh từ localStorage
                 const user = users.find(u => u.username === username);
+
                 if (!user) {
                     resolve({ success: false, message: 'Không tìm thấy user!' });
                     return;
                 }
+
                 if (user.password !== hashPassword(password)) {
                     resolve({ success: false, message: 'Sai mật khẩu!' });
                     return;
@@ -46,13 +64,15 @@ const AuthModule = (() => {
     const register = async (username, password) => {
         return new Promise((resolve) => {
             setTimeout(() => {
+                const users = _getUsers(); // ✅ Load fresh từ localStorage
+
                 if (users.find(u => u.username === username)) {
                     resolve({ success: false, message: 'User đã tồn tại!' });
                     return;
                 }
 
                 users.push({ username, password: hashPassword(password) });
-                localStorage.setItem(KEY, JSON.stringify(users));
+                _saveUsers(users); // ✅ Save vào localStorage
                 resolve({ success: true, message: 'Đăng ký thành công!' });
             }, 500);
         });

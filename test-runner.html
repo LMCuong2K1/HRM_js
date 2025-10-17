@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRM System - Comprehensive Test Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .test-section {
+            margin-bottom: 25px;
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+        }
+
+        .test-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        #results {
+            margin-top: 20px;
+        }
+
+        .test-item {
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 6px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .test-item:hover {
+            transform: translateX(5px);
+        }
+
+        .pass {
+            background: #d4edda;
+            color: #155724;
+            border-left: 3px solid #28a745;
+        }
+
+        .fail {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 3px solid #dc3545;
+        }
+
+        .test-name {
+            flex: 1;
+        }
+
+        .test-time {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-left: 10px;
+        }
+
+        .summary {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+        }
+
+        .summary h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-value.pass {
+            color: #28a745;
+        }
+
+        .stat-value.fail {
+            color: #dc3545;
+        }
+
+        .stat-value.total {
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-size: 18px;
+            padding: 20px;
+        }
+
+        .coverage-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 15px;
+            position: relative;
+        }
+
+        .coverage-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .test-item {
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        .module-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .module-card {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+            font-size: 13px;
+        }
+
+        .module-card .module-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .module-card .module-result {
+            color: #28a745;
+            font-size: 11px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🧪 HRM System - Comprehensive Test Suite</h1>
+        <p class="subtitle">Automated Testing for All Modules | VTC Academy WD1113</p>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+
+        <div class="loading">⏳ Running comprehensive tests...</div>
+        <div id="results"></div>
+    </div>
+
+    <script type="module">
+        import EmployeeDbModule from './EmployeeDbModule.js';
+        import SearchModule from './searchModule.js';
+        import AuthModule from './authModule.js';
+        import DepartmentModule from './departmentModule.js';
+        import PositionModule from './positionModule.js';
+        import SalaryModule from './salaryModule.js';
+        import AttendanceModule from './attendanceModule.js';
+        import LeaveModule from './leaveModule.js';
+        import PerformanceModule from './performanceModule.js';
+
+        const results = document.getElementById('results');
+        const loading = document.querySelector('.loading');
+        const progressBar = document.getElementById('progress');
+
+        let passCount = 0;
+        let failCount = 0;
+        let totalTests = 0;
+        let currentSection = null;
+        const startTime = Date.now();
+        const moduleResults = {};
+
+        // Helper functions
+        function createSection(title) {
+            const section = document.createElement('div');
+            section.className = 'test-section';
+            section.innerHTML = `<h3>📦 ${title}</h3>`;
+            results.appendChild(section);
+            currentSection = section;
+            moduleResults[title] = { pass: 0, fail: 0 };
+        }
+
+        function assert(condition, testName) {
+            totalTests++;
+            const testStart = performance.now();
+
+            const result = document.createElement('div');
+            result.className = 'test-item';
+
+            const testTime = (performance.now() - testStart).toFixed(2);
+
+            if (condition) {
+                result.classList.add('pass');
+                result.innerHTML = `
+                    <span class="test-name">✓ ${testName}</span>
+                    <span class="test-time">${testTime}ms</span>
+                `;
+                passCount++;
+                if (currentSection) {
+                    const moduleName = currentSection.querySelector('h3').textContent.replace('📦 ', '');
+                    moduleResults[moduleName].pass++;
+                }
+            } else {
+                result.classList.add('fail');
+                result.innerHTML = `
+                    <span class="test-name">✗ ${testName}</span>
+                    <span class="test-time">${testTime}ms</span>
+                `;
+                failCount++;
+                if (currentSection) {
+                    const moduleName = currentSection.querySelector('h3').textContent.replace('📦 ', '');
+                    moduleResults[moduleName].fail++;
+                }
+            }
+
+            if (currentSection) {
+                currentSection.appendChild(result);
+            }
+
+            // Update progress
+            const progress = (totalTests / 60) * 100;
+            progressBar.style.width = `${Math.min(progress, 100)}%`;
+        }
+
+        // Sleep helper for async tests
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // Run comprehensive tests
+        async function runTests() {
+            // Clear all localStorage
+            localStorage.clear();
+
+            // ==================== MODULE 1: EmployeeDbModule ====================
+            createSection('EmployeeDbModule - Database Operations');
+
+            const employees = EmployeeDbModule.getAllEmployees();
+            assert(Array.isArray(employees), 'getAllEmployees returns array');
+            assert(employees.length >= 5, 'Has default employees (5+)');
+            assert(employees.every(e => e.id && e.name), 'All employees have id and name');
+            assert(employees.every(e => typeof e.salary === 'number'), 'All salaries are numbers');
+
+            const emp1 = EmployeeDbModule.getEmployeeById(1);
+            assert(emp1 !== undefined, 'Can get employee by ID');
+            assert(emp1.id === 1, 'getById returns correct employee');
+
+            const nonExistent = EmployeeDbModule.getEmployeeById(99999);
+            assert(nonExistent === undefined, 'Returns undefined for non-existent ID');
+
+            const newEmp = {
+                name: 'Test User',
+                departmentId: 1,
+                positionId: 1,
+                salary: 5000000,
+                hireDate: '2025-01-01'
+            };
+            const added = EmployeeDbModule.addEmployee(newEmp);
+            assert(added.id > 0, 'Add employee generates auto-increment ID');
+            assert(added.name === 'Test User', 'Add preserves employee name');
+            assert(added.salary === 5000000, 'Add preserves salary value');
+
+            const updated = EmployeeDbModule.updateEmployee(added.id, { salary: 6000000 });
+            assert(updated !== null, 'Update returns updated employee');
+            assert(updated.salary === 6000000, 'Update changes salary correctly');
+
+            const deleted = EmployeeDbModule.deleteEmployee(added.id);
+            assert(deleted === true, 'Delete returns true on success');
+            assert(EmployeeDbModule.getEmployeeById(added.id) === undefined, 'Employee deleted from database');
+
+            // ==================== MODULE 2: AuthModule ====================
+            createSection('AuthModule - Authentication & Security');
+
+            await sleep(100);
+            const registerResult = await AuthModule.register('testuser', 'testpass123');
+            assert(registerResult.success === true, 'User registration succeeds');
+
+            const duplicateRegister = await AuthModule.register('testuser', 'anotherpass');
+            assert(duplicateRegister.success === false, 'Cannot register duplicate username');
+
+            const loginSuccess = await AuthModule.login('testuser', 'testpass123');
+            assert(loginSuccess.success === true, 'Login with correct credentials');
+
+            const loginWrongPass = await AuthModule.login('testuser', 'wrongpass');
+            assert(loginWrongPass.success === false, 'Login fails with wrong password');
+
+            const loginNonExistent = await AuthModule.login('nobody', 'pass');
+            assert(loginNonExistent.success === false, 'Login fails for non-existent user');
+
+            const currentUser = AuthModule.getCurrentUser();
+            assert(currentUser !== null, 'getCurrentUser returns logged-in user');
+            assert(currentUser.username === 'testuser', 'Current user has correct username');
+
+            AuthModule.logout();
+            assert(AuthModule.getCurrentUser() === null, 'Logout clears session');
+
+            // ==================== MODULE 3: SearchModule ====================
+            createSection('SearchModule - Search & Filter');
+
+            const allEmps = EmployeeDbModule.getAllEmployees();
+
+            const searchByName = SearchModule.filterEmployees({ name: 'Nguyễn' });
+            assert(Array.isArray(searchByName), 'Search by name returns array');
+            assert(searchByName.every(e => /nguyễn/i.test(e.name)), 'Name search uses regex (case-insensitive)');
+
+            const searchByDept = SearchModule.filterEmployees({ departmentId: 1 });
+            assert(searchByDept.every(e => e.departmentId === 1), 'Department filter works');
+
+            const salaryRange = SearchModule.filterEmployees({ minSalary: 5000000, maxSalary: 15000000 });
+            assert(salaryRange.every(e => e.salary >= 5000000 && e.salary <= 15000000), 'Salary range filter correct');
+
+            const emptySearch = SearchModule.filterEmployees({});
+            assert(emptySearch.length === allEmps.length, 'Empty search returns all employees');
+
+            // ==================== MODULE 4: DepartmentModule ====================
+            createSection('DepartmentModule - Department Management');
+
+            const depts = DepartmentModule.getAll();
+            assert(Array.isArray(depts), 'getAll returns array');
+            assert(depts.length > 0, 'Has default departments');
+
+            const newDept = DepartmentModule.add('Test Department');
+            assert(newDept !== null, 'Can add department');
+            assert(newDept.name === 'Test Department', 'Department name saved correctly');
+
+            const duplicateDept = DepartmentModule.add('Test Department');
+            assert(duplicateDept === null, 'Cannot add duplicate department name');
+
+            const dept1 = DepartmentModule.getById(newDept.id);
+            assert(dept1.name === 'Test Department', 'Can get department by ID');
+
+            const editedDept = DepartmentModule.edit(newDept.id, 'Edited Department');
+            assert(editedDept !== null, 'Can edit department');
+            assert(editedDept.name === 'Edited Department', 'Department name updated');
+
+            const deletedDept = DepartmentModule.delete(newDept.id);
+            assert(deletedDept === true, 'Can delete department');
+
+            // ==================== MODULE 5: PositionModule ====================
+            createSection('PositionModule - Position Management');
+
+            await sleep(100);
+            const positions = PositionModule.getAll();
+            assert(Array.isArray(positions), 'getAll returns array');
+            assert(positions.length > 0, 'Has default positions');
+
+            const newPos = await PositionModule.add('Test Position', 'Test Description', 5000000);
+            assert(newPos !== null, 'Can add position with async/await');
+            assert(newPos.title === 'Test Position', 'Position title saved');
+            assert(newPos.salaryBase === 5000000, 'Position salary base saved');
+
+            const pos1 = PositionModule.getById(newPos.id);
+            assert(pos1.title === 'Test Position', 'Can get position by ID');
+
+            const editedPos = await PositionModule.edit(newPos.id, 'Edited Position', 'New Desc', 6000000);
+            assert(editedPos.title === 'Edited Position', 'Position edited');
+
+            // ==================== MODULE 6: SalaryModule ====================
+            createSection('SalaryModule - Payroll Calculations');
+
+            const empWithBonus = { salary: 10000000, bonus: 2000000, deduction: 500000 };
+            const netSalary1 = SalaryModule.calculateNetSalary(empWithBonus);
+            assert(netSalary1 === 11500000, 'Net salary = salary + bonus - deduction');
+
+            const empNoBonus = { salary: 8000000 };
+            const netSalary2 = SalaryModule.calculateNetSalary(empNoBonus);
+            assert(netSalary2 === 8000000, 'Net salary handles missing bonus/deduction');
+
+            const empNegativeDeduction = { salary: 10000000, bonus: 0, deduction: -1000000 };
+            const netSalary3 = SalaryModule.calculateNetSalary(empNegativeDeduction);
+            assert(netSalary3 === 11000000, 'Handles negative deduction correctly');
+
+            const mockEmps = [
+                { id: 1, name: 'A', salary: 10000000, bonus: 1000000, deduction: 0 },
+                { id: 2, name: 'B', salary: 8000000, bonus: 0, deduction: 500000 }
+            ];
+            const payroll = SalaryModule.generatePayrollReport(mockEmps);
+            assert(payroll.length === 2, 'Payroll report has all employees');
+            assert(payroll[0].netSalary === 11000000, 'Payroll calculates net salary correctly');
+
+            // ==================== MODULE 7: AttendanceModule ====================
+            createSection('AttendanceModule - Time Tracking');
+
+            AttendanceModule.checkIn(1);
+            const logs = AttendanceModule.getAttendanceLogs();
+            assert(logs.length > 0, 'Check-in creates log entry');
+            assert(logs[logs.length - 1].checkIn !== null, 'Check-in time recorded');
+
+            await sleep(100);
+            AttendanceModule.checkOut(1);
+            const updatedLogs = AttendanceModule.getAttendanceLogs();
+            const lastLog = updatedLogs[updatedLogs.length - 1];
+            assert(lastLog.checkOut !== null, 'Check-out time recorded');
+            assert(lastLog.checkOut > lastLog.checkIn, 'Check-out after check-in');
+
+            const today = new Date().toLocaleDateString('vi-VN');
+            const attendanceReport = AttendanceModule.getAttendanceReport(1, today, today);
+            assert(attendanceReport.records.length > 0, 'Attendance report returns records');
+            assert(attendanceReport.totalHours >= 0, 'Total hours calculated');
+
+            // ==================== MODULE 8: LeaveModule ====================
+            createSection('LeaveModule - Leave Management');
+
+            const leaveRequest = LeaveModule.requestLeave(1, '2025-11-01', '2025-11-03', 'annual');
+            assert(leaveRequest !== null, 'Can request leave');
+            assert(leaveRequest.status === 'pending', 'Leave request starts as pending');
+
+            const balance = LeaveModule.getLeaveBalance(1);
+            assert(balance !== null, 'Can get leave balance');
+            assert(balance.annual >= 0, 'Annual leave balance is number');
+
+            const approved = LeaveModule.approveLeave(leaveRequest.id);
+            assert(approved === true, 'Can approve leave request');
+
+            const updatedBalance = LeaveModule.getLeaveBalance(1);
+            assert(updatedBalance.annual < balance.annual, 'Balance decreased after approval');
+
+            const allRequests = LeaveModule.getAllRequests();
+            assert(Array.isArray(allRequests), 'getAllRequests returns array');
+
+            // ==================== MODULE 9: PerformanceModule ====================
+            createSection('PerformanceModule - Performance Reviews');
+
+            PerformanceModule.addReview(1, 5, 'Excellent performance');
+            const reviews = PerformanceModule.getReviews(1);
+            assert(reviews.length > 0, 'Can add performance review');
+            assert(reviews[0].rating === 5, 'Rating saved correctly');
+
+            PerformanceModule.addReview(1, 4, 'Good work');
+            const avgRating = PerformanceModule.getAverageRating(1);
+            assert(avgRating === 4.5, 'Average rating calculated correctly (5+4)/2=4.5');
+
+            const performanceReport = PerformanceModule.getPerformanceReport(1);
+            assert(performanceReport.averageRating === 4.5, 'Report contains average rating');
+            assert(performanceReport.reviews.length === 2, 'Report contains all reviews');
+
+            PerformanceModule.addReview(2, 5, 'Top performer');
+            const topPerformers = PerformanceModule.getTopPerformers(2);
+            assert(Array.isArray(topPerformers), 'getTopPerformers returns array');
+            assert(topPerformers.length <= 2, 'Returns requested number of top performers');
+
+            // ==================== INTEGRATION TESTS ====================
+            createSection('Integration Tests - Cross-Module Operations');
+
+            // Full workflow test
+            const workflowEmp = EmployeeDbModule.addEmployee({
+                name: 'Integration Test User',
+                departmentId: 1,
+                positionId: 1,
+                salary: 12000000,
+                hireDate: '2025-10-01'
+            });
+            assert(workflowEmp !== null, 'Workflow: Employee created');
+
+            AttendanceModule.checkIn(workflowEmp.id);
+            await sleep(50);
+            AttendanceModule.checkOut(workflowEmp.id);
+            assert(true, 'Workflow: Attendance tracked');
+
+            const workflowLeave = LeaveModule.requestLeave(workflowEmp.id, '2025-12-01', '2025-12-05', 'annual');
+            assert(workflowLeave !== null, 'Workflow: Leave requested');
+
+            PerformanceModule.addReview(workflowEmp.id, 5, 'Great integration test');
+            assert(true, 'Workflow: Performance reviewed');
+
+            const workflowSalary = SalaryModule.calculateNetSalary({
+                salary: workflowEmp.salary,
+                bonus: 1000000,
+                deduction: 0
+            });
+            assert(workflowSalary === 13000000, 'Workflow: Salary calculated');
+
+            // Complete test suite
+            progressBar.style.width = '100%';
+            await sleep(300);
+
+            loading.style.display = 'none';
+            showSummary();
+        }
+
+        function showSummary() {
+            const endTime = Date.now();
+            const totalTime = ((endTime - startTime) / 1000).toFixed(2);
+            const passRate = ((passCount / totalTests) * 100).toFixed(1);
+
+            const summary = document.createElement('div');
+            summary.className = 'summary';
+            summary.innerHTML = `
+                <h2>📊 Test Summary</h2>
+                <div class="stats">
+                    <div class="stat-card">
+                        <span class="stat-value total">${totalTests}</span>
+                        <span class="stat-label">Total Tests</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value pass">${passCount}</span>
+                        <span class="stat-label">Passed</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value fail">${failCount}</span>
+                        <span class="stat-label">Failed</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value total">${totalTime}s</span>
+                        <span class="stat-label">Duration</span>
+                    </div>
+                </div>
+                <div class="coverage-bar">
+                    <div class="coverage-fill" style="width: ${passRate}%">
+                        ${passRate}% Pass Rate
+                    </div>
+                </div>
+                <h3 style="margin-top: 20px; color: #2c3e50; font-size: 16px;">Module Coverage</h3>
+                <div class="module-stats">
+                    ${Object.entries(moduleResults).map(([module, result]) => `
+                        <div class="module-card">
+                            <div class="module-name">${module}</div>
+                            <div class="module-result">✓ ${result.pass} passed / ${result.fail} failed</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            results.appendChild(summary);
+
+            // Log to console
+            console.log(`%c✅ Test Suite Completed!`, 'color: green; font-size: 16px; font-weight: bold;');
+            console.log(`Total: ${totalTests} | Passed: ${passCount} | Failed: ${failCount} | Pass Rate: ${passRate}%`);
+            console.log(`Duration: ${totalTime}s`);
+            console.table(moduleResults);
+        }
+
+        // Start testing
+        runTests().catch(err => {
+            console.error('Test suite error:', err);
+            loading.innerHTML = `<div style="color: red;">❌ Test suite encountered an error: ${err.message}</div>`;
+        });
+    </script>
+</body>
+
+</html>

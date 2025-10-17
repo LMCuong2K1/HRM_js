@@ -1,4 +1,5 @@
 // file: performanceModule.js
+
 import EmployeeDbModule from './EmployeeDbModule.js';
 
 const PerformanceModule = (() => {
@@ -11,15 +12,11 @@ const PerformanceModule = (() => {
 
     /**
      * Thêm một đánh giá mới cho nhân viên.
-     * @param {number} employeeId
-     * @param {number} rating - Điểm số từ 1 đến 5
-     * @param {string} feedback - Nhận xét
      */
     const addReview = (employeeId, rating, feedback) => {
         if (rating < 1 || rating > 5) {
             throw new Error('Điểm số phải từ 1 đến 5!');
         }
-
         const newReview = {
             id: Date.now(),
             employeeId,
@@ -31,26 +28,53 @@ const PerformanceModule = (() => {
         _saveReviews();
     };
 
-    /**
-     * Lấy tất cả đánh giá và tính điểm trung bình cho mỗi nhân viên.
-     * @returns {Array} Mảng các đối tượng nhân viên với thông tin đánh giá.
-     */
-    const getPerformanceReport = () => {
-        const employees = EmployeeDbModule.getAllEmployees();
+    // ✅ THÊM MỚI: Lấy reviews của 1 nhân viên cụ thể
+    const getReviews = (employeeId) => {
+        return reviews.filter(r => r.employeeId === employeeId);
+    };
 
-        return employees.map(emp => {
-            // Lọc ra tất cả đánh giá của nhân viên này
-            const empReviews = reviews.filter(r => r.employeeId === emp.id);
+    // ✅ THÊM MỚI: Tính rating trung bình của 1 nhân viên
+    const getAverageRating = (employeeId) => {
+        const empReviews = reviews.filter(r => r.employeeId === employeeId);
+        if (empReviews.length === 0) return 0;
 
-            // Sử dụng reduce để tính tổng điểm
+        const totalRating = empReviews.reduce((sum, review) => sum + review.rating, 0);
+        return totalRating / empReviews.length;
+    };
+
+    // ✅ SỬA: Thêm parameter employeeId (optional)
+    const getPerformanceReport = (employeeId = null) => {
+        // Nếu có employeeId, chỉ lấy report cho 1 người
+        if (employeeId !== null) {
+            const employee = EmployeeDbModule.getEmployeeById(employeeId);
+            if (!employee) return null;
+
+            const empReviews = reviews.filter(r => r.employeeId === employeeId);
             const totalRating = empReviews.reduce((sum, review) => sum + review.rating, 0);
-
-            // Tính điểm trung bình
             const averageRating = empReviews.length > 0
-                ? (totalRating / empReviews.length).toFixed(2)
-                : 'Chưa có';
+                ? parseFloat((totalRating / empReviews.length).toFixed(2))
+                : 0;
 
-            // ✅ Trả về đầy đủ thông tin từ employee object + thông tin đánh giá
+            return {
+                id: employee.id,
+                name: employee.name,
+                departmentId: employee.departmentId,
+                positionId: employee.positionId,
+                reviewCount: empReviews.length,
+                averageRating: averageRating,
+                reviews: empReviews
+            };
+        }
+
+        // Nếu không có employeeId, lấy report cho tất cả
+        const employees = EmployeeDbModule.getAllEmployees();
+        return employees.map(emp => {
+            const empReviews = reviews.filter(r => r.employeeId === emp.id);
+            const totalRating = empReviews.reduce((sum, review) => sum + review.rating, 0);
+            const averageRating = empReviews.length > 0
+                ? parseFloat((totalRating / empReviews.length).toFixed(2))
+                : 0;
+
             return {
                 id: emp.id,
                 name: emp.name,
@@ -58,30 +82,28 @@ const PerformanceModule = (() => {
                 positionId: emp.positionId,
                 reviewCount: empReviews.length,
                 averageRating: averageRating,
-                reviews: empReviews // Danh sách chi tiết các đánh giá
+                reviews: empReviews
             };
         });
     };
 
-    /**
-     * Lấy top performers (sắp xếp theo điểm trung bình cao nhất)
-     * @param {number} limit - Số lượng nhân viên cần lấy
-     */
     const getTopPerformers = (limit = 5) => {
-        const report = getPerformanceReport();
-
+        const report = getPerformanceReport(); // Lấy tất cả
         return report
-            .filter(emp => emp.reviewCount > 0) // Chỉ lấy nhân viên có đánh giá
+            .filter(emp => emp.reviewCount > 0)
             .sort((a, b) => {
                 const ratingA = parseFloat(a.averageRating) || 0;
                 const ratingB = parseFloat(b.averageRating) || 0;
-                return ratingB - ratingA; // Sắp xếp giảm dần
+                return ratingB - ratingA;
             })
             .slice(0, limit);
     };
 
+    // ✅ EXPORT ĐẦY ĐỦ 5 FUNCTIONS
     return {
         addReview,
+        getReviews,              // ← THÊM MỚI
+        getAverageRating,        // ← THÊM MỚI
         getPerformanceReport,
         getTopPerformers
     };
