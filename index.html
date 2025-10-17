@@ -2,79 +2,82 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-  <!-- Container Authentication -->
-  <div id="auth-container">
-      <h2>Đăng nhập</h2>
-      <form id="loginForm">
-          <input type="text" id="loginUsername" placeholder="Tên đăng nhập" required autocomplete="username" />
-          <input type="password" id="loginPassword" placeholder="Mật khẩu" required autocomplete="current-password" />
-          <button type="submit">Đăng nhập</button>
-      </form>
+    <!-- Container Authentication -->
+    <div id="auth-container">
+        <h2>Đăng nhập</h2>
+        <form id="loginForm">
+            <input type="text" id="loginUsername" placeholder="Tên đăng nhập" required autocomplete="username" />
+            <input type="password" id="loginPassword" placeholder="Mật khẩu" required autocomplete="current-password" />
+            <button type="submit">Đăng nhập</button>
+        </form>
 
-      <h2>Đăng ký</h2>
-      <form id="registerForm">
-          <input type="text" id="registerUsername" placeholder="Tên đăng nhập" required autocomplete="username" />
-          <input type="password" id="registerPassword" placeholder="Mật khẩu" required autocomplete="new-password" />
-          <button type="submit">Đăng ký</button>
-      </form>
-  </div>
+        <h2>Đăng ký</h2>
+        <form id="registerForm">
+            <input type="text" id="registerUsername" placeholder="Tên đăng nhập" required autocomplete="username" />
+            <input type="password" id="registerPassword" placeholder="Mật khẩu" required autocomplete="new-password" />
+            <button type="submit">Đăng ký</button>
+        </form>
+    </div>
 
-  <!-- Container Main App -->
-  <div id="main-app" style="display: none;">
-      <nav id="main-menu">
-          <h3>HRM Project</h3>
-          <ul>
-              <li><a href="#" data-module="dashboard">Tổng quan</a></li>
-              <li><a href="#" data-module="employees">Quản lý Nhân viên</a></li>
-              <li><a href="#" data-module="departments">Quản lý Phòng ban</a></li>
-              <li><a href="#" data-module="positions">Quản lý Vị trí</a></li>
-              <li><a href="#" data-module="salary">Báo cáo Lương</a></li>
-              <!-- Thêm các mục menu khác cho các module tương lai ở đây -->
-          </ul>
-          <div id="user-info">
-              <p>Xin chào, <span id="userDisplay"></span></p>
-              <button id="logoutBtn">Đăng xuất</button>
-          </div>
-      </nav>
+    <!-- Container Main App -->
+    <div id="main-app" style="display: none;">
+        <nav id="main-menu">
+            <h3>HRM Project</h3>
+            <ul>
+                <li><a href="#" data-module="dashboard">Tổng quan</a></li>
+                <li><a href="#" data-module="employees">Quản lý Nhân viên</a></li>
+                <li><a href="#" data-module="departments">Quản lý Phòng ban</a></li>
+                <li><a href="#" data-module="positions">Quản lý Vị trí</a></li>
+                <li><a href="#" data-module="salary">Báo cáo Lương</a></li>
+                <li><a href="#" data-module="attendance">Chấm công</a></li>
+                <!-- Thêm các mục menu khác cho các module tương lai ở đây -->
+            </ul>
+            <div id="user-info">
+                <p>Xin chào, <span id="userDisplay"></span></p>
+                <button id="logoutBtn">Đăng xuất</button>
+            </div>
+        </nav>
 
-      <main id="content-container">
-          <!-- View cho Dashboard (Tổng quan) -->
-          <div id="dashboard-view" class="view">
-              <h2>Chào mừng đến với hệ thống HRM</h2>
-              <p>Chọn một chức năng từ menu bên trái để bắt đầu.</p>
-          </div>
+        <main id="content-container">
+            <!-- View cho Dashboard (Tổng quan) -->
+            <div id="dashboard-view" class="view">
+                <h2>Chào mừng đến với hệ thống HRM</h2>
+                <p>Chọn một chức năng từ menu bên trái để bắt đầu.</p>
+            </div>
 
-          <!-- View cho Quản lý Nhân viên -->
-          <div id="employees-view" class="view" style="display: none;">
-              <!-- Toàn bộ giao diện quản lý nhân viên hiện tại của bạn (tìm kiếm, form, danh sách) sẽ được chuyển vào đây -->
-          </div>
+            <!-- View cho Quản lý Nhân viên -->
+            <div id="employees-view" class="view" style="display: none;">
+                <!-- Toàn bộ giao diện quản lý nhân viên hiện tại của bạn (tìm kiếm, form, danh sách) sẽ được chuyển vào đây -->
+            </div>
 
-          <!-- View cho Quản lý Phòng ban -->
-          <div id="departments-view" class="view" style="display: none;">
-              <!-- Giao diện quản lý phòng ban sẽ được tạo ở đây -->
-          </div>
+            <!-- View cho Quản lý Phòng ban -->
+            <div id="departments-view" class="view" style="display: none;">
+                <!-- Giao diện quản lý phòng ban sẽ được tạo ở đây -->
+            </div>
 
-          <div id="positions-view" class="view" style="display: none;">
-            <!-- Giao diện quản lý vị trí sẽ được tạo ở đây -->
-        </div>
-        <div id="salary-view" class="view" style="display: none;">
-          <!-- Bảng báo cáo lương sẽ được tạo ở đây -->
-      </div>
+            <div id="positions-view" class="view" style="display: none;">
+                <!-- Giao diện quản lý vị trí sẽ được tạo ở đây -->
+            </div>
+            <div id="salary-view" class="view" style="display: none;">
+                <!-- Bảng báo cáo lương sẽ được tạo ở đây -->
+            </div>
+            <div id="attendance-view" class="view" style="display: none;">
+                <!-- Giao diện chấm công sẽ ở đây -->
+            </div>
+            <!-- Các view khác cho các module tương lai -->
 
-          <!-- Các view khác cho các module tương lai -->
+        </main>
+    </div>
 
-      </main>
-  </div>
-
-  <!-- Script chính của ứng dụng -->
-  <script type="module" src="app.js"></script>
+    <!-- Script chính của ứng dụng -->
+    <script type="module" src="app.js"></script>
 </body>
 
 </html>
