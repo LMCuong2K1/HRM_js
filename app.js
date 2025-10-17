@@ -250,89 +250,138 @@ const initEditEmployeeView = () => {
  * Khởi tạo view tìm kiếm nhân viên
  */
 const initSearchView = () => {
-    const container = document.getElementById('search-container');
-    const resultsContainer = document.getElementById('search-results');
+    const container = document.getElementById('search-view');
+    if (!container) return;
 
-    if (!container || !resultsContainer) return;
+    const departments = DepartmentModule.getAll();
+    const positions = PositionModule.getAll();
 
     container.innerHTML = `
-        <h3>Tìm kiếm Nhân viên</h3>
-        <form id="searchForm">
+        <h2>🔍 Tìm kiếm Nhân viên Nâng cao</h2>
+        
+        <form id="search-form" class="form-container">
             <div class="form-group">
                 <label>Tên nhân viên:</label>
-                <input type="text" id="searchName" placeholder="Nhập tên (có thể để trống)">
+                <input type="text" id="search-name" placeholder="Nhập tên (hỗ trợ RegExp)">
             </div>
+            
             <div class="form-group">
                 <label>Phòng ban:</label>
-                <select id="searchDept">
+                <select id="search-department">
                     <option value="">-- Tất cả --</option>
-                    ${DepartmentModule.getAll().map(d => `<option value="${d.id}">${d.name}</option>`).join('')}
+                    ${departments.map(d => `<option value="${d.id}">${d.name}</option>`).join('')}
                 </select>
             </div>
+            
             <div class="form-group">
                 <label>Vị trí:</label>
-                <select id="searchPos">
+                <select id="search-position">
                     <option value="">-- Tất cả --</option>
-                    ${PositionModule.getAll().map(p => `<option value="${p.id}">${p.title}</option>`).join('')}
+                    ${positions.map(p => `<option value="${p.id}">${p.title}</option>`).join('')}
                 </select>
             </div>
-            <button type="submit" class="btn-primary">Tìm kiếm</button>
+            
+            <!-- ✅ NEW: Salary Range -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Lương từ (VNĐ):</label>
+                    <input type="number" id="search-min-salary" placeholder="Ví dụ: 5000000">
+                </div>
+                
+                <div class="form-group">
+                    <label>Lương đến (VNĐ):</label>
+                    <input type="number" id="search-max-salary" placeholder="Ví dụ: 20000000">
+                </div>
+            </div>
+            
+            <!-- ✅ NEW: Sort Options -->
+            <div class="form-group">
+                <label>Sắp xếp theo:</label>
+                <select id="search-sort">
+                    <option value="">-- Không sắp xếp --</option>
+                    <option value="name">Tên (A-Z)</option>
+                    <option value="salary-desc">Lương (Cao → Thấp)</option>
+                    <option value="salary-asc">Lương (Thấp → Cao)</option>
+                    <option value="hireDate-desc">Ngày vào (Mới → Cũ)</option>
+                    <option value="hireDate-asc">Ngày vào (Cũ → Mới)</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn-primary">🔍 Tìm kiếm</button>
+            <button type="button" id="reset-search" class="btn-secondary">🔄 Làm mới</button>
         </form>
+
+        <div id="search-results"></div>
     `;
 
-    const form = container.querySelector('#searchForm');
-    form.addEventListener('submit', (e) => {
+    // Event: Submit search
+    document.getElementById('search-form').addEventListener('submit', (e) => {
         e.preventDefault();
 
         const criteria = {
-            name: form.querySelector('#searchName').value.trim(),
-            departmentId: form.querySelector('#searchDept').value ? parseInt(form.querySelector('#searchDept').value) : null,
-            positionId: form.querySelector('#searchPos').value ? parseInt(form.querySelector('#searchPos').value) : null
+            name: document.getElementById('search-name').value.trim(),
+            departmentId: document.getElementById('search-department').value,
+            positionId: document.getElementById('search-position').value,
+            minSalary: document.getElementById('search-min-salary').value,
+            maxSalary: document.getElementById('search-max-salary').value,
+            sortBy: document.getElementById('search-sort').value
         };
 
-        // Lọc bỏ các criteria null/empty
-        Object.keys(criteria).forEach(key => {
-            if (!criteria[key]) delete criteria[key];
-        });
-
         const results = SearchModule.filterEmployees(criteria);
+        displaySearchResults(results);
+    });
 
-        // Hiển thị kết quả
-        if (results.length === 0) {
-            resultsContainer.innerHTML = '<p>Không tìm thấy nhân viên nào!</p>';
-        } else {
-            resultsContainer.innerHTML = `
-                <h4>Kết quả tìm kiếm (${results.length} nhân viên):</h4>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Tên</th>
-                            <th>Phòng ban</th>
-                            <th>Vị trí</th>
-                            <th>Lương</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${results.map(emp => {
-                const dept = DepartmentModule.getById(emp.departmentId);
-                const pos = PositionModule.getById(emp.positionId);
-                return `
-                                <tr>
-                                    <td>${emp.id}</td>
-                                    <td>${emp.name}</td>
-                                    <td>${dept ? dept.name : 'N/A'}</td>
-                                    <td>${pos ? pos.title : 'N/A'}</td>
-                                    <td>${emp.salary.toLocaleString('vi-VN')} VNĐ</td>
-                                </tr>
-                            `;
-            }).join('')}
-                    </tbody>
-                </table>
-            `;
-        }
+    // Event: Reset
+    document.getElementById('reset-search').addEventListener('click', () => {
+        document.getElementById('search-form').reset();
+        document.getElementById('search-results').innerHTML = '';
     });
 };
+
+const displaySearchResults = (results) => {
+    const container = document.getElementById('search-results');
+
+    if (results.length === 0) {
+        container.innerHTML = '<p class="message error">❌ Không tìm thấy nhân viên nào!</p>';
+        return;
+    }
+
+    const departments = DepartmentModule.getAll();
+    const positions = PositionModule.getAll();
+
+    const getDepartmentName = (id) => departments.find(d => d.id === id)?.name || 'N/A';
+    const getPositionTitle = (id) => positions.find(p => p.id === id)?.title || 'N/A';
+
+    container.innerHTML = `
+        <h3>📋 Kết quả tìm kiếm: ${results.length} nhân viên</h3>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tên</th>
+                    <th>Phòng ban</th>
+                    <th>Vị trí</th>
+                    <th>Lương</th>
+                    <th>Ngày vào</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${results.map(emp => `
+                    <tr>
+                        <td>${emp.id}</td>
+                        <td>${emp.name}</td>
+                        <td>${getDepartmentName(emp.departmentId)}</td>
+                        <td>${getPositionTitle(emp.positionId)}</td>
+                        <td>${emp.salary.toLocaleString('vi-VN')} VNĐ</td>
+                        <td>${emp.hireDate}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+};
+
 
 /**
  * Khởi tạo view quản lý phòng ban - CẢI THIỆN

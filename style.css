@@ -580,3 +580,34 @@ tbody tr:last-child td {
         transform: rotate(360deg);
     }
 }
+
+/* Form Row for 2 columns (min-max salary) */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+/* Search Results */
+#search-results {
+    margin-top: 30px;
+}
+
+#search-results h3 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+#search-results .message {
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 600;
+}
+
+#search-results .message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border-left: 4px solid var(--danger-color);
+}
