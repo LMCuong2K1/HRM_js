@@ -37,8 +37,10 @@
     <input type="text" id="empName" placeholder="Tên nhân viên" required />
     <input type="text" id="empDept" placeholder="Phòng ban" required />
     <input type="number" id="empSalary" placeholder="Lương" required />
-    <button type="submit">Thêm</button>
+    <button type="submit" id="addEmployeeFormBtn">Thêm</button>
+    <button type="button" id="cancelEditBtn" style="display:none;">Hủy</button>
   </form>
+  
   <ul id="employeeList"></ul> <!-- Hiển thị danh sách nhân viên -->
 
   <script type="module" src="app.js"></script>

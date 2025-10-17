@@ -1,6 +1,7 @@
 import AuthModule from "./authModule.js";
 import EmployeeDbModule from "./EmployeeDbModule.js";
 
+let editModeId = null;
 console.log("AuthModule:", AuthModule);
 
 
@@ -9,6 +10,15 @@ const registerForm = document.getElementById('registerForm');
 const dashboard = document.getElementById('dashboard');
 const userDisplay = document.getElementById('userDisplay');
 const logoutBtn = document.getElementById('logoutBtn');
+const cancelBtn = document.getElementById('cancelEditBtn');
+if (cancelBtn) {
+  cancelBtn.onclick = () => {
+    editModeId = null;
+    document.getElementById('addEmployeeForm').reset();
+    document.getElementById('addEmployeeFormBtn').textContent = 'Thêm';
+    cancelBtn.style.display = 'none';
+  };
+}
 
 const showDashboard = (username) => {
   userDisplay.textContent = username;
@@ -106,6 +116,56 @@ const renderEmployeeList = () => {
     li.appendChild(editBtn);
     ul.appendChild(li);
   });
-  renderEmployeeList();
 }
+
+function editEmployee(id) {
+  const emp = EmployeeDbModule.getAllEmployees().find(e => e.id === id);
+  if (!emp) return;
+
+  // Điền thông tin cũ vào form
+  document.getElementById('empName').value = emp.name;
+  document.getElementById('empDept').value = emp.department;
+  document.getElementById('empSalary').value = emp.salary;
+
+  // Chuyển sang chế độ sửa
+  editModeId = id;
+  document.getElementById('addEmployeeFormBtn').textContent = 'Cập nhật';
+  
+  const cancelBtn = document.getElementById('cancelEditBtn');
+  if (cancelBtn) cancelBtn.style.display = 'inline-block';
+}
+document.getElementById('addEmployeeForm').onsubmit = (e) => {
+  e.preventDefault();
+  const name = document.getElementById('empName').value.trim();
+  const department = document.getElementById('empDept').value.trim();
+  const salary = parseFloat(document.getElementById('empSalary').value);
+
+  if (!name || !department || !salary) {
+    alert('Vui lòng điền đầy đủ thông tin!');
+    return;
+  }
+
+  const employeeData = { name, department, salary };
+
+  if (editModeId) {
+    // Nếu đang ở chế độ sửa -> Cập nhật
+    EmployeeDbModule.updateEmployee(editModeId, employeeData);
+    alert('Cập nhật thành công!');
+  } else {
+    // Nếu không -> Thêm mới
+    const result = EmployeeDbModule.addEmployee(employeeData);
+    alert(`Đã thêm nhân viên: ${result.name} với ID: ${result.id}`);
+  }
+  
+  // Reset form và trạng thái về ban đầu
+  editModeId = null;
+  document.getElementById('addEmployeeForm').reset();
+  document.getElementById('addEmployeeFormBtn').textContent = 'Thêm';
+  const cancelBtn = document.getElementById('cancelEditBtn');
+  if (cancelBtn) cancelBtn.style.display = 'none';
+
+  renderEmployeeList(); // Vẽ lại danh sách
+};
+
+renderEmployeeList();
 
