@@ -3,6 +3,7 @@ import EmployeeDbModule from "./EmployeeDbModule.js";
 import DepartmentModule from './departmentModule.js';
 import PositionModule from './positionModule.js';
 import SearchModule from './searchModule.js';
+import SalaryModule from './salaryModule.js';
 
 // --- PHẦN 1: LẤY CÁC DOM ELEMENT TOÀN CỤC ---
 const authContainer = document.getElementById('auth-container');
@@ -234,6 +235,51 @@ searchForm.onsubmit = (e) => {
 };
 
 /**
+ * Khởi tạo giao diện cho module Báo cáo Lương.
+ */
+const initSalaryView = () => {
+  const container = document.getElementById('salary-view');
+  container.innerHTML = ''; // Xóa nội dung cũ để cập nhật
+
+  const reportData = SalaryModule.generatePayrollReport();
+
+  const table = document.createElement('table');
+  table.innerHTML = `
+      <thead>
+          <tr>
+              <th>ID</th>
+              <th>Tên Nhân viên</th>
+              <th>Phòng ban</th>
+              <th>Lương cơ bản</th>
+              <th>Thưởng</th>
+              <th>Khấu trừ</th>
+              <th>Lương thực nhận</th>
+          </tr>
+      </thead>
+      <tbody>
+      </tbody>
+  `;
+
+  const tbody = table.querySelector('tbody');
+  reportData.forEach(item => {
+      const row = tbody.insertRow();
+      row.innerHTML = `
+          <td>${item.id}</td>
+          <td>${item.name}</td>
+          <td>${item.department}</td>
+          <td>${item.baseSalary.toLocaleString()}</td>
+          <td>${item.bonus.toLocaleString()}</td>
+          <td>${item.deduction.toLocaleString()}</td>
+          <td><strong>${item.netSalary.toLocaleString()}</strong></td>
+      `;
+  });
+
+  container.innerHTML = '<h3>Báo cáo Bảng lương</h3>';
+  container.appendChild(table);
+};
+
+
+/**
  * Khởi tạo giao diện và gán sự kiện cho module Quản lý Phòng ban.
  */
 const initDepartmentsView = () => {
@@ -346,8 +392,11 @@ const activateView = (viewId) => {
             case 'departments-view':
                 initDepartmentsView();
                 break;
-              case 'positions-view': // CASE MỚI
+              case 'positions-view': 
                 initPositionsView();
+                break;
+              case 'salary-view':
+                initSalaryView();
                 break;
             // Thêm các case khác cho module tương lai
         }
