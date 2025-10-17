@@ -10,21 +10,33 @@
 
 <body>
     <!-- Container Authentication -->
+    <!-- Container Authentication -->
     <div id="auth-container">
-        <h2>Đăng nhập</h2>
-        <form id="loginForm">
-            <input type="text" id="loginUsername" placeholder="Tên đăng nhập" required autocomplete="username" />
-            <input type="password" id="loginPassword" placeholder="Mật khẩu" required autocomplete="current-password" />
-            <button type="submit">Đăng nhập</button>
-        </form>
+        <!-- Login Form -->
+        <div id="login-box">
+            <h2>Đăng nhập</h2>
+            <form id="loginForm">
+                <input type="text" id="loginUsername" placeholder="Tên đăng nhập" required autocomplete="username">
+                <input type="password" id="loginPassword" placeholder="Mật khẩu" required
+                    autocomplete="current-password">
+                <button type="submit">Đăng nhập</button>
+            </form>
+            <p class="auth-toggle">Chưa có tài khoản? <a href="#" id="showRegister">Đăng ký ngay</a></p>
+        </div>
 
-        <h2>Đăng ký</h2>
-        <form id="registerForm">
-            <input type="text" id="registerUsername" placeholder="Tên đăng nhập" required autocomplete="username" />
-            <input type="password" id="registerPassword" placeholder="Mật khẩu" required autocomplete="new-password" />
-            <button type="submit">Đăng ký</button>
-        </form>
+        <!-- Register Form (ban đầu bị ẩn) -->
+        <div id="register-box" style="display: none;">
+            <h2>Đăng ký</h2>
+            <form id="registerForm">
+                <input type="text" id="registerUsername" placeholder="Tên đăng nhập" required autocomplete="username">
+                <input type="password" id="registerPassword" placeholder="Mật khẩu" required
+                    autocomplete="new-password">
+                <button type="submit">Đăng ký</button>
+            </form>
+            <p class="auth-toggle">Đã có tài khoản? <a href="#" id="showLogin">Đăng nhập</a></p>
+        </div>
     </div>
+
 
     <!-- Container Main App -->
     <div id="main-app" style="display: none;">
