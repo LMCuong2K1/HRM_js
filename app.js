@@ -7,6 +7,7 @@ import SalaryModule from './salaryModule.js';
 import DeleteEmployeeModule from './deleteEmployeeModule.js';
 import EmployeeFormModule from './employeeFormModule.js';
 import AttendanceModule from './attendanceModule.js';
+import LeaveModule from './leaveModule.js';
 
 // --- PHẦN 1: LẤY CÁC DOM ELEMENT TOÀN CỤC ---
 const authContainer = document.getElementById('auth-container');
@@ -176,6 +177,112 @@ const initEmployeesView = () => {
     };
 
 };
+
+
+/**
+ * Khởi tạo giao diện cho module Quản lý Nghỉ phép.
+ */
+const initLeaveView = () => {
+    const container = document.getElementById('leave-view');
+    const employees = EmployeeDbModule.getAllEmployees();
+
+    // Render form tạo yêu cầu
+    let options = employees.map(emp => `<option value="${emp.id}">${emp.name}</option>`).join('');
+
+    container.innerHTML = `
+        <h3>Quản lý Nghỉ phép</h3>
+        <form id="leaveRequestForm">
+            <h4>Tạo Yêu cầu Nghỉ phép</h4>
+            <select id="leaveEmployee" required>${options}</select>
+            <input type="date" id="leaveStartDate" required />
+            <input type="date" id="leaveEndDate" required />
+            <input type="text" id="leaveReason" placeholder="Lý do nghỉ phép" required />
+            <button type="submit">Gửi yêu cầu</button>
+        </form>
+        <hr />
+        <h4>Danh sách Yêu cầu</h4>
+        <div id="leave-requests-list"></div>
+    `;
+
+    // Render danh sách các yêu cầu đã có
+    renderLeaveRequests();
+
+    // Gán sự kiện cho form
+    document.getElementById('leaveRequestForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const employeeId = parseInt(document.getElementById('leaveEmployee').value);
+        const startDate = document.getElementById('leaveStartDate').value;
+        const endDate = document.getElementById('leaveEndDate').value;
+        const reason = document.getElementById('leaveReason').value;
+
+        LeaveModule.requestLeave(employeeId, startDate, endDate, reason);
+        alert('Đã gửi yêu cầu thành công!');
+        document.getElementById('leaveRequestForm').reset();
+        renderLeaveRequests(); // Cập nhật lại danh sách
+    });
+};
+
+// Hàm helper để render danh sách yêu cầu nghỉ phép
+const renderLeaveRequests = () => {
+    const listContainer = document.getElementById('leave-requests-list');
+    const requests = LeaveModule.getAllRequests();
+
+    if (requests.length === 0) {
+        listContainer.innerHTML = '<p>Chưa có yêu cầu nào.</p>';
+        return;
+    }
+
+    const table = document.createElement('table');
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Nhân viên</th>
+                <th>Từ ngày</th>
+                <th>Đến ngày</th>
+                <th>Lý do</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${requests.map(req => `
+                <tr>
+                    <td>${req.employeeName}</td>
+                    <td>${req.startDate}</td>
+                    <td>${req.endDate}</td>
+                    <td>${req.reason}</td>
+                    <td>${req.status}</td>
+                    <td>
+                        ${req.status === 'pending' ? `
+                            <button class="approve-leave-btn" data-id="${req.id}">Duyệt</button>
+                            <button class="reject-leave-btn" data-id="${req.id}">Từ chối</button>
+                        ` : 'Đã xử lý'}
+                    </td>
+                </tr>
+            `).join('')}
+        </tbody>
+    `;
+    listContainer.innerHTML = '';
+    listContainer.appendChild(table);
+
+    // Gán sự kiện cho các nút Duyệt/Từ chối
+    listContainer.querySelectorAll('.approve-leave-btn').forEach(btn => {
+        btn.onclick = () => {
+            const reqId = parseInt(btn.dataset.id);
+            LeaveModule.updateRequestStatus(reqId, 'approved');
+            renderLeaveRequests();
+        };
+    });
+
+    listContainer.querySelectorAll('.reject-leave-btn').forEach(btn => {
+        btn.onclick = () => {
+            const reqId = parseInt(btn.dataset.id);
+            LeaveModule.updateRequestStatus(reqId, 'rejected');
+            renderLeaveRequests();
+        };
+    });
+};
+
 
 /**
  * Khởi tạo giao diện cho module Chấm công.
@@ -409,6 +516,9 @@ const activateView = (viewId) => {
                 break;
             case 'attendance-view':
                 initAttendanceView();
+                break;
+            case 'leave-view':
+                initLeaveView();
                 break;
             // Thêm các case khác cho module tương lai
         }
