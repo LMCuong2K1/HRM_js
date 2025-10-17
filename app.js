@@ -2,6 +2,7 @@ import AuthModule from "./authModule.js";
 import EmployeeDbModule from "./EmployeeDbModule.js";
 import DepartmentModule from './departmentModule.js';
 import PositionModule from './positionModule.js';
+import SearchModule from './searchModule.js';
 
 // --- PHẦN 1: LẤY CÁC DOM ELEMENT TOÀN CỤC ---
 const authContainer = document.getElementById('auth-container');
@@ -25,20 +26,58 @@ const initEmployeesView = () => {
     // Kiểm tra để đảm bảo chỉ render HTML một lần duy nhất
     if (container.innerHTML.trim() !== '') return;
 
-    container.innerHTML = `
-        <h3>Quản lý Nhân viên</h3>
-        <div id="employee-controls">
-            <input type="text" id="searchInput" placeholder="Nhập tên nhân viên để tìm..." />
-        </div>
-        <form id="addEmployeeForm">
-            <input type="text" id="empName" placeholder="Tên nhân viên" required />
-            <input type="text" id="empDept" placeholder="Phòng ban" required />
-            <input type="number" id="empSalary" placeholder="Lương" required />
-            <button type="submit" id="addEmployeeFormBtn">Thêm</button>
-            <button type="button" id="cancelEditBtn" style="display:none;">Hủy</button>
-        </form>
-        <ul id="employeeList"></ul>
-    `;
+    // Thay thế đoạn container.innerHTML trong hàm initEmployeesView
+container.innerHTML = `
+<h3>Quản lý Nhân viên</h3>
+<form id="search-form">
+    <input type="text" id="searchName" placeholder="Tên nhân viên..." />
+    <select id="searchDept">
+        <option value="">Tất cả Phòng ban</option>
+    </select>
+    <select id="searchPos">
+        <option value="">Tất cả Vị trí</option>
+    </select>
+    <button type="submit">Tìm kiếm</button>
+</form>
+
+<form id="addEmployeeForm">
+    <input type="text" id="empName" placeholder="Tên nhân viên" required />
+    
+    <!-- THAY ĐỔI: Sử dụng SELECT thay vì INPUT -->
+    <select id="empDept" required>
+        <option value="">-- Chọn Phòng ban --</option>
+    </select>
+    <select id="empPos" required>
+        <option value="">-- Chọn Vị trí --</option>
+    </select>
+
+    <input type="number" id="empSalary" placeholder="Lương" required />
+    <button type="submit" id="addEmployeeFormBtn">Thêm</button>
+    <button type="button" id="cancelEditBtn" style="display:none;">Hủy</button>
+</form>
+<ul id="employeeList"></ul>
+`;
+// Thêm đoạn này vào sau container.innerHTML trong initEmployeesView
+
+const deptSelect = container.querySelector('#empDept');
+const posSelect = container.querySelector('#empPos');
+
+// Lấy dữ liệu từ DepartmentModule và tạo options
+DepartmentModule.getAll().forEach(dept => {
+    const option = document.createElement('option');
+    option.value = dept.id;
+    option.textContent = dept.name;
+    deptSelect.appendChild(option);
+});
+
+// Lấy dữ liệu từ PositionModule và tạo options
+PositionModule.getAll().forEach(pos => {
+    const option = document.createElement('option');
+    option.value = pos.id;
+    option.textContent = pos.title;
+    posSelect.appendChild(option);
+});
+
     
     // Lấy các element con sau khi đã render vào container
     const searchInput = container.querySelector('#searchInput');
@@ -48,39 +87,50 @@ const initEmployeesView = () => {
     const employeeList = container.querySelector('#employeeList');
 
     // Hàm vẽ lại danh sách nhân viên
-    const renderList = (employees) => {
-        employeeList.innerHTML = '';
-        employees.forEach(emp => {
-            const li = document.createElement('li');
-            li.textContent = `ID: ${emp.id}, Tên: ${emp.name}, Phòng ban: ${emp.department}, Lương: ${emp.salary}`;
-            
-            const editBtn = document.createElement('button');
-            editBtn.textContent = 'Sửa';
-            editBtn.onclick = () => editEmployee(emp.id);
-            li.appendChild(editBtn);
+    // Hàm vẽ lại danh sách nhân viên
+const renderList = (employees) => {
+  employeeList.innerHTML = '';
+  employees.forEach(emp => {
+      // Tìm tên phòng ban và vị trí từ ID tương ứng
+      const department = DepartmentModule.getAll().find(d => d.id === emp.departmentId)?.name || 'Không xác định';
+      const position = PositionModule.getAll().find(p => p.id === emp.positionId)?.title || 'Không xác định';
+      
+      const li = document.createElement('li');
+      // Hiển thị tên đã tìm được
+      li.textContent = `ID: ${emp.id}, Tên: ${emp.name}, Phòng ban: ${department}, Vị trí: ${position}, Lương: ${emp.salary}`;
+      
+      const editBtn = document.createElement('button');
+      editBtn.textContent = 'Sửa';
+      editBtn.onclick = () => editEmployee(emp.id);
+      li.appendChild(editBtn);
 
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'Xóa';
-            deleteBtn.onclick = () => handleDelete(emp.id);
-            li.appendChild(deleteBtn);
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = 'Xóa';
+      deleteBtn.onclick = () => handleDelete(emp.id);
+      li.appendChild(deleteBtn);
 
-            employeeList.appendChild(li);
-        });
-    };
+      employeeList.appendChild(li);
+  });
+};
+
     
     // Hàm xử lý khi bấm nút "Sửa"
-    const editEmployee = (id) => {
-        const emp = EmployeeDbModule.getAllEmployees().find(e => e.id === id);
-        if (!emp) return;
+// Hàm xử lý khi bấm nút "Sửa"
+const editEmployee = (id) => {
+  const emp = EmployeeDbModule.getAllEmployees().find(e => e.id === id);
+  if (!emp) return;
 
-        container.querySelector('#empName').value = emp.name;
-        container.querySelector('#empDept').value = emp.department;
-        container.querySelector('#empSalary').value = emp.salary;
+  container.querySelector('#empName').value = emp.name;
+  container.querySelector('#empSalary').value = emp.salary;
+  // Set giá trị cho các ô select bằng ID tương ứng
+  container.querySelector('#empDept').value = emp.departmentId;
+  container.querySelector('#empPos').value = emp.positionId;
 
-        editModeId = id;
-        addEmployeeFormBtn.textContent = 'Cập nhật';
-        cancelBtn.style.display = 'inline-block';
-    };
+  editModeId = id;
+  addEmployeeFormBtn.textContent = 'Cập nhật';
+  cancelBtn.style.display = 'inline-block';
+};
+
 
     // Hàm xử lý khi bấm nút "Xóa"
     const handleDelete = (id) => {
@@ -92,31 +142,37 @@ const initEmployeesView = () => {
     };
     
     // Gán sự kiện cho form Thêm/Sửa
-    addEmployeeForm.onsubmit = (e) => {
-        e.preventDefault();
-        const name = container.querySelector('#empName').value.trim();
-        const department = container.querySelector('#empDept').value.trim();
-        const salary = parseFloat(container.querySelector('#empSalary').value);
+// Gán sự kiện cho form Thêm/Sửa
+addEmployeeForm.onsubmit = (e) => {
+  e.preventDefault();
+  const name = container.querySelector('#empName').value.trim();
+  const departmentId = parseInt(container.querySelector('#empDept').value);
+  const positionId = parseInt(container.querySelector('#empPos').value);
+  const salary = parseFloat(container.querySelector('#empSalary').value);
 
-        if (!name || !department || isNaN(salary)) {
-            alert('Vui lòng điền đầy đủ và đúng định dạng thông tin!');
-            return;
-        }
+  // Cập nhật validation để kiểm tra cả departmentId và positionId
+  if (!name || !departmentId || !positionId || isNaN(salary)) {
+      alert('Vui lòng điền đầy đủ tất cả các trường thông tin!');
+      return;
+  }
 
-        if (editModeId) {
-            EmployeeDbModule.updateEmployee(editModeId, { name, department, salary });
-            alert('Cập nhật thành công!');
-        } else {
-            EmployeeDbModule.addEmployee({ name, department, salary });
-            alert('Thêm nhân viên thành công!');
-        }
+  const employeeData = { name, departmentId, positionId, salary };
 
-        editModeId = null;
-        addEmployeeForm.reset();
-        addEmployeeFormBtn.textContent = 'Thêm';
-        cancelBtn.style.display = 'none';
-        renderList(EmployeeDbModule.getAllEmployees());
-    };
+  if (editModeId) {
+      EmployeeDbModule.updateEmployee(editModeId, employeeData);
+      alert('Cập nhật nhân viên thành công!');
+  } else {
+      EmployeeDbModule.addEmployee(employeeData);
+      alert('Thêm nhân viên thành công!');
+  }
+
+  editModeId = null;
+  addEmployeeForm.reset();
+  addEmployeeFormBtn.textContent = 'Thêm';
+  cancelBtn.style.display = 'none';
+  renderList(EmployeeDbModule.getAllEmployees());
+};
+
     
     // Gán sự kiện cho nút "Hủy"
     cancelBtn.onclick = () => {
@@ -127,17 +183,54 @@ const initEmployeesView = () => {
     };
 
     // Gán sự kiện cho ô tìm kiếm
-    searchInput.addEventListener('input', (e) => {
-        const searchTerm = e.target.value.toLowerCase();
-        const allEmployees = EmployeeDbModule.getAllEmployees();
-        const filteredEmployees = allEmployees.filter(emp =>
-            emp.name.toLowerCase().includes(searchTerm)
-        );
-        renderList(filteredEmployees);
-    });
+    // searchInput.addEventListener('input', (e) => {
+    //     const searchTerm = e.target.value.toLowerCase();
+    //     const allEmployees = EmployeeDbModule.getAllEmployees();
+    //     const filteredEmployees = allEmployees.filter(emp =>
+    //         emp.name.toLowerCase().includes(searchTerm)
+    //     );
+    //     renderList(filteredEmployees);
+    // });
 
     // Hiển thị danh sách nhân viên lần đầu khi view được kích hoạt
     renderList(EmployeeDbModule.getAllEmployees());
+
+    // Thêm vào cuối hàm initEmployeesView
+
+// --- LOGIC CHO TÌM KIẾM NÂNG CAO ---
+const searchForm = container.querySelector('#search-form');
+const searchNameInput = container.querySelector('#searchName');
+const searchDeptSelect = container.querySelector('#searchDept');
+const searchPosSelect = container.querySelector('#searchPos');
+
+// Đổ dữ liệu cho các ô select của form tìm kiếm
+DepartmentModule.getAll().forEach(dept => {
+    const option = document.createElement('option');
+    option.value = dept.id;
+    option.textContent = dept.name;
+    searchDeptSelect.appendChild(option);
+});
+
+PositionModule.getAll().forEach(pos => {
+    const option = document.createElement('option');
+    option.value = pos.id;
+    option.textContent = pos.title;
+    searchPosSelect.appendChild(option);
+});
+
+// Lắng nghe sự kiện submit của form tìm kiếm
+searchForm.onsubmit = (e) => {
+    e.preventDefault();
+    const criteria = {
+        name: searchNameInput.value.trim(),
+        departmentId: parseInt(searchDeptSelect.value) || null,
+        positionId: parseInt(searchPosSelect.value) || null
+    };
+    
+    const filteredEmployees = SearchModule.filterEmployees(criteria);
+    renderList(filteredEmployees);
+};
+
 };
 
 /**
