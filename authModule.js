@@ -2,21 +2,6 @@
 const AuthModule = (() => {
     const KEY = 'users';
     const SESSION_KEY = 'session';
-
-    // Khởi tạo users với admin mặc định
-    let users = JSON.parse(localStorage.getItem(KEY)) || [];
-
-    // ✅ THÊM ĐOẠN NÀY: Tạo admin mặc định nếu chưa có
-    if (users.length === 0) {
-        const defaultAdmin = {
-            username: 'admin',
-            password: hashPassword('12345')
-        };
-        users.push(defaultAdmin);
-        localStorage.setItem(KEY, JSON.stringify(users));
-        console.log('✅ Đã tạo tài khoản admin mặc định');
-    }
-
     const hashPassword = (password) => {
         let hash = 0;
         for (let i = 0; i < password.length; i++) {
@@ -26,6 +11,18 @@ const AuthModule = (() => {
         }
         return hash;
     };
+
+    // Khởi tạo users
+    let users = JSON.parse(localStorage.getItem(KEY)) || [];
+    if (users.length === 0) {
+        const defaultAdmin = {
+            username: 'admin',
+            password: hashPassword('12345')
+        };
+        users.push(defaultAdmin);
+        localStorage.setItem(KEY, JSON.stringify(users));
+        console.log('✅ Đã tạo admin mặc định');
+    }
 
     const login = async (username, password) => {
         return new Promise((resolve) => {
