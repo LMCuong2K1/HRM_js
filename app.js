@@ -958,90 +958,103 @@ const initLeaveView = () => {
 /**
  * Khởi tạo view đánh giá hiệu suất
  */
+/**
+ * Khởi tạo view đánh giá hiệu suất
+ */
 const initPerformanceView = () => {
     const container = document.getElementById('performance-container');
     if (!container) return;
 
     const renderPerformance = () => {
-        const report = PerformanceModule.getPerformanceReport();
+        try {
+            const report = PerformanceModule.getPerformanceReport();
 
-        container.innerHTML = `
-            <h3>Đánh giá Hiệu suất</h3>
-            
-            <!-- Form thêm đánh giá -->
-            <div class="form-section">
-                <h4>Thêm Đánh giá</h4>
-                <form id="addReviewForm">
-                    <div class="form-group">
-                        <label>Nhân viên:</label>
-                        <select id="reviewEmpSelect" required>
-                            <option value="">-- Chọn nhân viên --</option>
-                            ${EmployeeDbModule.getAllEmployees().map(emp =>
-            `<option value="${emp.id}">${emp.name}</option>`
-        ).join('')}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Điểm số (1-5):</label>
-                        <input type="number" id="reviewRating" min="1" max="5" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Nhận xét:</label>
-                        <textarea id="reviewFeedback" rows="3" required></textarea>
-                    </div>
-                    <button type="submit" class="btn-primary">Thêm Đánh giá</button>
-                </form>
-            </div>
+            container.innerHTML = `
+                <h3>Đánh giá Hiệu suất</h3>
+                
+                <!-- Form thêm đánh giá -->
+                <div class="form-section">
+                    <h4>Thêm Đánh giá</h4>
+                    <form id="addReviewForm">
+                        <div class="form-group">
+                            <label>Nhân viên:</label>
+                            <select id="reviewEmpSelect" required>
+                                <option value="">-- Chọn nhân viên --</option>
+                                ${EmployeeDbModule.getAllEmployees().map(emp =>
+                `<option value="${emp.id}">${emp.name}</option>`
+            ).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Điểm số (1-5):</label>
+                            <input type="number" id="reviewRating" min="1" max="5" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nhận xét:</label>
+                            <textarea id="reviewFeedback" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary">Thêm Đánh giá</button>
+                    </form>
+                </div>
 
-            <!-- Báo cáo hiệu suất -->
-            <div class="list-section">
-                <h4>Báo cáo Hiệu suất</h4>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Tên</th>
-                            <th>Phòng ban</th>
-                            <th>Vị trí</th>
-                            <th>Điểm TB</th>
-                            <th>Số đánh giá</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${report.map(emp => {
-            const dept = DepartmentModule.getById(emp.departmentId);
-            const pos = PositionModule.getById(emp.positionId);
-            return `
+                <!-- Báo cáo hiệu suất -->
+                <div class="list-section">
+                    <h4>Báo cáo Hiệu suất</h4>
+                    ${report.length === 0 ? '<p>Chưa có dữ liệu nhân viên</p>' : `
+                        <table>
+                            <thead>
                                 <tr>
-                                    <td>${emp.name}</td>
-                                    <td>${dept ? dept.name : 'N/A'}</td>
-                                    <td>${pos ? pos.title : 'N/A'}</td>
-                                    <td><strong>${emp.averageRating}</strong>/5</td>
-                                    <td>${emp.reviewCount}</td>
+                                    <th>Tên</th>
+                                    <th>Phòng ban</th>
+                                    <th>Vị trí</th>
+                                    <th>Điểm TB</th>
+                                    <th>Số đánh giá</th>
                                 </tr>
-                            `;
-        }).join('')}
-                    </tbody>
-                </table>
-            </div>
-            <div id="perfMessage" class="message"></div>
-        `;
+                            </thead>
+                            <tbody>
+                                ${report.map(emp => {
+                const dept = DepartmentModule.getById(emp.departmentId);
+                const pos = PositionModule.getById(emp.positionId);
+                return `
+                                        <tr>
+                                            <td>${emp.name || 'N/A'}</td>
+                                            <td>${dept ? dept.name : 'N/A'}</td>
+                                            <td>${pos ? pos.title : 'N/A'}</td>
+                                            <td><strong>${emp.averageRating}</strong>/5</td>
+                                            <td>${emp.reviewCount}</td>
+                                        </tr>
+                                    `;
+            }).join('')}
+                            </tbody>
+                        </table>
+                    `}
+                </div>
+                <div id="perfMessage" class="message"></div>
+            `;
 
-        // Thêm đánh giá
-        container.querySelector('#addReviewForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const empId = parseInt(container.querySelector('#reviewEmpSelect').value);
-            const rating = parseInt(container.querySelector('#reviewRating').value);
-            const feedback = container.querySelector('#reviewFeedback').value.trim();
+            // Thêm đánh giá
+            const addForm = container.querySelector('#addReviewForm');
+            if (addForm) {
+                addForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const empId = parseInt(container.querySelector('#reviewEmpSelect').value);
+                    const rating = parseInt(container.querySelector('#reviewRating').value);
+                    const feedback = container.querySelector('#reviewFeedback').value.trim();
 
-            try {
-                PerformanceModule.addReview(empId, rating, feedback);
-                showMessage('Thêm đánh giá thành công!', 'success');
-                container.querySelector('#addReviewForm').reset();
-                renderPerformance();
-            } catch (error) {
-                showMessage(error.message, 'error');
+                    try {
+                        PerformanceModule.addReview(empId, rating, feedback);
+                        showMessage('Thêm đánh giá thành công!', 'success');
+                        addForm.reset();
+                        renderPerformance();
+                    } catch (error) {
+                        showMessage(error.message, 'error');
+                    }
+                });
             }
-        });
+        } catch (error) {
+            console.error('Lỗi khi render performance view:', error);
+            container.innerHTML = `<p class="error">Có lỗi xảy ra: ${error.message}</p>`;
+        }
     };
 
     const showMessage = (msg, type) => {
@@ -1056,6 +1069,7 @@ const initPerformanceView = () => {
 
     renderPerformance();
 };
+
 
 // --- PHẦN 4: GẮN CÁC SỰ KIỆN VÀ KHỞI ĐỘNG ỨNG DỤNG ---
 
