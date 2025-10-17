@@ -11,6 +11,9 @@ const dashboard = document.getElementById('dashboard');
 const userDisplay = document.getElementById('userDisplay');
 const logoutBtn = document.getElementById('logoutBtn');
 const cancelBtn = document.getElementById('cancelEditBtn');
+const addEmployeeForm = document.getElementById('addEmployeeForm');
+const addEmployeeFormBtn = document.getElementById('addEmployeeFormBtn');
+
 if (cancelBtn) {
   cancelBtn.onclick = () => {
     editModeId = null;
@@ -34,15 +37,15 @@ const showForms = () => {
 }
 
 logoutBtn.addEventListener('click', () => {
-  AuthMobile.logout();
+  AuthModule.logout();
   showForms();
 });
 
 document.getElementById('cancelEditBtn').onclick = () => {
   editModeId = null;
-  document.getElementById('addEmployeeFormBtn').textContent = 'Thêm';
+  addEmployeeFormBtn.textContent = 'Thêm';
   document.getElementById('cancelEditBtn').style.display = 'none';
-  document.getElementById('addEmployeeForm').reset();
+  addEmployeeForm.reset();
 };
 
 loginForm.onsubmit = async (e) => {
@@ -71,7 +74,7 @@ if (AuthModule.isLoggedIn()) {
 
 console.log("EmployeeDbModule:", EmployeeDbModule);
 
-document.getElementById('addEmployeeForm').onsubmit = (e) => {
+addEmployeeForm.onsubmit = (e) => {
   e.preventDefault();
   const name = document.getElementById('empName').value.trim();
   const department = document.getElementById('empDept').value.trim();
@@ -90,7 +93,7 @@ document.getElementById('addEmployeeForm').onsubmit = (e) => {
     EmployeeDbModule.updateEmployee(editModeId, { name, department, salary });
     alert("Cập nhật thành công!");
     editModeId = null;
-    document.getElementById('addEmployeeForm').textContent = 'Thêm';
+    addEmployeeForm.textContent = 'Thêm';
   }
   else {
     const result = EmployeeDbModule.addEmployee(newEmployee);
@@ -114,6 +117,13 @@ const renderEmployeeList = () => {
     editBtn.textContent = 'Sửa';
     editBtn.onclick = () => editEmployee(emp.id);
     li.appendChild(editBtn);
+
+    // Nút Xóa (MỚI)
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'Xóa';
+    deleteBtn.onclick = () => handleDelete(emp.id); // Gọi hàm xử lý xóa
+    li.appendChild(deleteBtn);
+
     ul.appendChild(li);
   });
 }
@@ -129,12 +139,12 @@ function editEmployee(id) {
 
   // Chuyển sang chế độ sửa
   editModeId = id;
-  document.getElementById('addEmployeeFormBtn').textContent = 'Cập nhật';
+  addEmployeeFormBtn.textContent = 'Cập nhật';
   
   const cancelBtn = document.getElementById('cancelEditBtn');
   if (cancelBtn) cancelBtn.style.display = 'inline-block';
 }
-document.getElementById('addEmployeeForm').onsubmit = (e) => {
+addEmployeeForm.onsubmit = (e) => {
   e.preventDefault();
   const name = document.getElementById('empName').value.trim();
   const department = document.getElementById('empDept').value.trim();
@@ -159,13 +169,26 @@ document.getElementById('addEmployeeForm').onsubmit = (e) => {
   
   // Reset form và trạng thái về ban đầu
   editModeId = null;
-  document.getElementById('addEmployeeForm').reset();
-  document.getElementById('addEmployeeFormBtn').textContent = 'Thêm';
+  addEmployeeForm.reset();
+  addEmployeeFormBtn.textContent = 'Thêm';
   const cancelBtn = document.getElementById('cancelEditBtn');
   if (cancelBtn) cancelBtn.style.display = 'none';
 
   renderEmployeeList(); // Vẽ lại danh sách
 };
+
+function handleDelete(id) {
+  // Hỏi người dùng để xác nhận
+  const isConfirmed = confirm('Bạn có chắc chắn muốn xóa nhân viên này không?');
+
+  if (isConfirmed) {
+    // Nếu người dùng đồng ý, gọi hàm xóa trong module
+    EmployeeDbModule.deleteEmployee(id);
+    // Vẽ lại danh sách để cập nhật giao diện
+    renderEmployeeList();
+    alert('Đã xóa nhân viên thành công!');
+  }
+}
 
 renderEmployeeList();
 

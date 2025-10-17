@@ -25,6 +25,23 @@ const EmployeeDbModule = (() => {
         return null;
     }
 
+    const deleteEmployee = (id) => {
+        // Lọc ra những nhân viên không có id trùng với id cần xóa
+        employees = employees.filter(emp => emp.id !== id);
+        // Cập nhật lại localStorage
+        localStorage.setItem("employees", JSON.stringify(employees));
+        return true; // Trả về true để báo hiệu xóa thành công
+      };
+      
+      // Đừng quên export nó ra ngoài
+      return {
+        getAllEmployees,
+        addEmployee,
+        updateEmployee,
+        deleteEmployee // Thêm vào đây
+      };
+      
+
     // let editModeId = null;
     // const editEmployee = (id) => {
     //     const emp = EmployeeDbModule.getAllEmployees().find(e => e.id === id);
@@ -36,11 +53,7 @@ const EmployeeDbModule = (() => {
     //     document.getElementById('addEmployeeForm').textContent = 'Cập nhật';
     //     document.getElementById('cancelEditBtn').style.display = 'inline-block';
     // }
-    return {
-        getAllEmployees,
-        addEmployee,
-        updateEmployee
-    }
+
 })();
 
 export default EmployeeDbModule;
