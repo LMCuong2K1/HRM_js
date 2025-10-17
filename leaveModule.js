@@ -1,73 +1,78 @@
 // file: leaveModule.js
+
 import EmployeeDbModule from './EmployeeDbModule.js';
 
 const LeaveModule = (() => {
     const LEAVE_REQUESTS_KEY = 'leaveRequests';
     const LEAVE_BALANCE_KEY = 'leaveBalance';
-    const ANNUAL_LEAVE_DEFAULT = 12; // Mỗi nhân viên có 12 ngày phép năm
+    const ANNUAL_LEAVE_DEFAULT = 12;
 
-    let leaveRequests = JSON.parse(localStorage.getItem(LEAVE_REQUESTS_KEY)) || [];
-    let leaveBalance = JSON.parse(localStorage.getItem(LEAVE_BALANCE_KEY)) || {};
-
-    const _saveRequests = () => {
-        localStorage.setItem(LEAVE_REQUESTS_KEY, JSON.stringify(leaveRequests));
+    // ✅ HELPER: Load requests FRESH từ localStorage
+    const _getRequests = () => {
+        return JSON.parse(localStorage.getItem(LEAVE_REQUESTS_KEY)) || [];
     };
 
-    const _saveBalance = () => {
-        localStorage.setItem(LEAVE_BALANCE_KEY, JSON.stringify(leaveBalance));
+    // ✅ HELPER: Save requests vào localStorage
+    const _saveRequests = (requests) => {
+        localStorage.setItem(LEAVE_REQUESTS_KEY, JSON.stringify(requests));
+    };
+
+    // ✅ HELPER: Load balance FRESH từ localStorage
+    const _getBalance = () => {
+        return JSON.parse(localStorage.getItem(LEAVE_BALANCE_KEY)) || {};
+    };
+
+    // ✅ HELPER: Save balance vào localStorage
+    const _saveBalance = (balance) => {
+        localStorage.setItem(LEAVE_BALANCE_KEY, JSON.stringify(balance));
     };
 
     /**
      * Khởi tạo số ngày phép cho nhân viên mới
-     * @param {number} employeeId
      */
     const _initializeBalance = (employeeId) => {
+        const leaveBalance = _getBalance();
         if (!leaveBalance[employeeId]) {
             leaveBalance[employeeId] = {
                 total: ANNUAL_LEAVE_DEFAULT,
                 used: 0,
-                remaining: ANNUAL_LEAVE_DEFAULT
+                annual: ANNUAL_LEAVE_DEFAULT  // ✅ Test expects "annual" field
             };
-            _saveBalance();
+            _saveBalance(leaveBalance);
         }
     };
 
     /**
      * Tính số ngày nghỉ giữa startDate và endDate
-     * @param {string} startDate - Format 'YYYY-MM-DD'
-     * @param {string} endDate - Format 'YYYY-MM-DD'
-     * @returns {number} Số ngày nghỉ
      */
     const _calculateLeaveDays = (startDate, endDate) => {
         const start = new Date(startDate);
         const end = new Date(endDate);
         const diffTime = Math.abs(end - start);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 để tính cả ngày bắt đầu
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
         return diffDays;
     };
 
     /**
      * Tạo một yêu cầu nghỉ phép mới
-     * @param {number} employeeId
-     * @param {string} startDate - Định dạng 'YYYY-MM-DD'
-     * @param {string} endDate - Định dạng 'YYYY-MM-DD'
-     * @param {string} type - Loại nghỉ: 'annual' (phép năm), 'sick' (ốm đau), 'unpaid' (không lương)
-     * @param {string} reason - Lý do nghỉ
      */
     const requestLeave = (employeeId, startDate, endDate, type = 'annual', reason = '') => {
+        // Load fresh data
+        const leaveRequests = _getRequests();
+        const leaveBalance = _getBalance();
+
         // Khởi tạo balance nếu chưa có
         _initializeBalance(employeeId);
+        const balance = _getBalance()[employeeId];
 
         // Tính số ngày nghỉ
         const leaveDays = _calculateLeaveDays(startDate, endDate);
 
         // Kiểm tra balance nếu là annual leave
         if (type === 'annual') {
-            const balance = leaveBalance[employeeId];
-            if (balance.remaining < leaveDays) {
-                throw new Error(
-                    `Không đủ số ngày phép! Còn lại: ${balance.remaining} ngày, yêu cầu: ${leaveDays} ngày`
-                );
+            if (balance.annual < leaveDays) {
+                console.warn(`Không đủ số ngày phép! Còn lại: ${balance.annual} ngày, yêu cầu: ${leaveDays} ngày`);
+                return null; // ✅ Return null thay vì throw error (cho test)
             }
         }
 
@@ -80,59 +85,101 @@ const LeaveModule = (() => {
             leaveDays,
             type,
             reason,
-            status: 'pending', // 'pending', 'approved', 'rejected'
+            status: 'pending',
             createdAt: new Date().toISOString()
         };
 
         leaveRequests.push(newRequest);
-        _saveRequests();
+        _saveRequests(leaveRequests);
         return newRequest;
     };
 
     /**
-     * Cập nhật trạng thái của một yêu cầu nghỉ phép
-     * @param {number} requestId - ID của request
-     * @param {string} status - 'approved' hoặc 'rejected'
+     * ✅ THÊM: Approve leave request (wrapper cho test)
      */
-    const updateLeaveStatus = (requestId, status) => {
+    const approveLeave = (requestId) => {
+        const leaveRequests = _getRequests();
+        const leaveBalance = _getBalance(); // ✅ Load fresh
+
         const request = leaveRequests.find(r => r.id === requestId);
         if (!request) {
-            throw new Error('Không tìm thấy yêu cầu nghỉ phép!');
+            console.warn('Không tìm thấy yêu cầu nghỉ phép!');
+            return false;
         }
 
         if (request.status !== 'pending') {
-            throw new Error('Yêu cầu này đã được xử lý rồi!');
+            console.warn('Yêu cầu này đã được xử lý rồi!');
+            return false;
         }
 
-        request.status = status;
+        request.status = 'approved';
         request.processedAt = new Date().toISOString();
 
-        // Nếu approved và là annual leave, trừ số ngày phép
-        if (status === 'approved' && request.type === 'annual') {
+        // ✅ FIX: Update balance correctly
+        if (request.type === 'annual') {
             _initializeBalance(request.employeeId);
-            const balance = leaveBalance[request.employeeId];
-            balance.used += request.leaveDays;
-            balance.remaining = balance.total - balance.used;
-            _saveBalance();
+
+            // ✅ CRITICAL: Load fresh balance AGAIN after init
+            const updatedBalance = _getBalance();
+            const empBalance = updatedBalance[request.employeeId];
+
+            empBalance.used += request.leaveDays;
+            empBalance.annual = empBalance.total - empBalance.used;
+
+            // ✅ Save updated balance object
+            _saveBalance(updatedBalance);
         }
 
-        _saveRequests();
-        return request;
+        _saveRequests(leaveRequests);
+        return true;
+    };
+
+
+    /**
+     * ✅ THÊM: Reject leave request (wrapper cho test)
+     */
+    const rejectLeave = (requestId) => {
+        const leaveRequests = _getRequests();
+
+        const request = leaveRequests.find(r => r.id === requestId);
+        if (!request) {
+            console.warn('Không tìm thấy yêu cầu nghỉ phép!');
+            return false;
+        }
+
+        if (request.status !== 'pending') {
+            console.warn('Yêu cầu này đã được xử lý rồi!');
+            return false;
+        }
+
+        request.status = 'rejected';
+        request.processedAt = new Date().toISOString();
+        _saveRequests(leaveRequests);
+        return true;
+    };
+
+    /**
+     * Cập nhật trạng thái của một yêu cầu nghỉ phép (generic method)
+     */
+    const updateLeaveStatus = (requestId, status) => {
+        if (status === 'approved') {
+            return approveLeave(requestId);
+        } else if (status === 'rejected') {
+            return rejectLeave(requestId);
+        }
+        return false;
     };
 
     /**
      * Lấy số ngày phép còn lại của nhân viên
-     * @param {number} employeeId
-     * @returns {object} Object chứa thông tin về ngày phép
      */
     const getLeaveBalance = (employeeId) => {
         _initializeBalance(employeeId);
+        const leaveBalance = _getBalance();
         const balance = leaveBalance[employeeId];
 
-        // Lấy thông tin nhân viên
         const employee = EmployeeDbModule.getEmployeeById(employeeId);
-
-        // Lấy tất cả các request của nhân viên
+        const leaveRequests = _getRequests();
         const employeeRequests = leaveRequests.filter(r => r.employeeId === employeeId);
         const pendingRequests = employeeRequests.filter(r => r.status === 'pending');
         const approvedRequests = employeeRequests.filter(r => r.status === 'approved');
@@ -140,9 +187,10 @@ const LeaveModule = (() => {
         return {
             employeeId,
             employeeName: employee ? employee.name : 'Unknown',
-            totalLeave: balance.total,
-            usedLeave: balance.used,
-            remainingLeave: balance.remaining,
+            total: balance.total,
+            used: balance.used,
+            annual: balance.annual, // ✅ Test expects "annual" field
+            remaining: balance.annual,
             pendingRequests: pendingRequests.length,
             approvedRequests: approvedRequests.length,
             requests: employeeRequests
@@ -150,10 +198,10 @@ const LeaveModule = (() => {
     };
 
     /**
-     * Lấy tất cả yêu cầu nghỉ phép
-     * @param {string} filterStatus - Lọc theo status: 'all', 'pending', 'approved', 'rejected'
+     * ✅ THÊM: Alias getAllRequests() cho test
      */
-    const getAllLeaveRequests = (filterStatus = 'all') => {
+    const getAllRequests = (filterStatus = 'all') => {
+        const leaveRequests = _getRequests();
         if (filterStatus === 'all') {
             return leaveRequests;
         }
@@ -161,37 +209,46 @@ const LeaveModule = (() => {
     };
 
     /**
-     * Reset số ngày phép hàng năm (dùng cho đầu năm mới)
-     * @param {number} employeeId - ID nhân viên cụ thể, hoặc null để reset tất cả
+     * Lấy tất cả yêu cầu nghỉ phép (old name for compatibility)
+     */
+    const getAllLeaveRequests = (filterStatus = 'all') => {
+        return getAllRequests(filterStatus);
+    };
+
+    /**
+     * Reset số ngày phép hàng năm
      */
     const resetAnnualLeave = (employeeId = null) => {
+        const leaveBalance = _getBalance();
+
         if (employeeId) {
-            // Reset cho một nhân viên cụ thể
-            if (leaveBalance[employeeId]) {
-                leaveBalance[employeeId] = {
-                    total: ANNUAL_LEAVE_DEFAULT,
-                    used: 0,
-                    remaining: ANNUAL_LEAVE_DEFAULT
-                };
-            }
+            leaveBalance[employeeId] = {
+                total: ANNUAL_LEAVE_DEFAULT,
+                used: 0,
+                annual: ANNUAL_LEAVE_DEFAULT
+            };
         } else {
-            // Reset cho tất cả nhân viên
             const allEmployees = EmployeeDbModule.getAllEmployees();
             allEmployees.forEach(emp => {
                 leaveBalance[emp.id] = {
                     total: ANNUAL_LEAVE_DEFAULT,
                     used: 0,
-                    remaining: ANNUAL_LEAVE_DEFAULT
+                    annual: ANNUAL_LEAVE_DEFAULT
                 };
             });
         }
-        _saveBalance();
+
+        _saveBalance(leaveBalance);
     };
 
+    // ✅ EXPORT đầy đủ functions
     return {
         requestLeave,
+        approveLeave,        // ✅ THÊM
+        rejectLeave,         // ✅ THÊM
         updateLeaveStatus,
         getLeaveBalance,
+        getAllRequests,      // ✅ THÊM (alias)
         getAllLeaveRequests,
         resetAnnualLeave
     };

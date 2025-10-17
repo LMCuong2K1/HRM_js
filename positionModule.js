@@ -1,137 +1,158 @@
 // file: positionModule.js
+
 const PositionModule = (() => {
     const KEY = 'positions';
 
-    // Khởi tạo dữ liệu mặc định
-    let positions = JSON.parse(localStorage.getItem(KEY)) || [
+    // ✅ Default positions
+    const DEFAULT_POSITIONS = [
         { id: 1, title: 'Lập trình viên', description: 'Phát triển phần mềm', salaryBase: 15000000 },
         { id: 2, title: 'Trưởng phòng Kinh doanh', description: 'Quản lý bộ phận kinh doanh', salaryBase: 25000000 },
         { id: 3, title: 'Nhân viên Marketing', description: 'Tiếp thị sản phẩm', salaryBase: 12000000 },
         { id: 4, title: 'Kế toán', description: 'Quản lý tài chính', salaryBase: 14000000 }
     ];
 
-    // Lưu vào localStorage ngay khi khởi tạo nếu chưa có
-    if (!localStorage.getItem(KEY)) {
-        localStorage.setItem(KEY, JSON.stringify(positions));
-    }
+    const _getPositions = () => {
+        return JSON.parse(localStorage.getItem(KEY)) || [];
+    };
 
-    /**
-     * Hàm lưu dữ liệu vào localStorage với async/await
-     */
-    const savePositions = async () => {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                localStorage.setItem(KEY, JSON.stringify(positions));
-                resolve(true);
-            }, 500); // Giả lập độ trễ 0.5 giây
-        });
+    const _savePositions = (positions) => {
+        localStorage.setItem(KEY, JSON.stringify(positions));
+    };
+
+    const _initDefaultPositions = () => {
+        const existing = _getPositions();
+        if (existing.length === 0) {
+            _savePositions(DEFAULT_POSITIONS);
+            console.log('✅ Khởi tạo 4 positions mặc định');
+        }
     };
 
     /**
-     * Lấy tất cả vị trí
+     * ✅ FIX: getAll() tự động init nếu empty
      */
-    const getAll = () => positions;
+    const getAll = () => {
+        let positions = _getPositions();
+        if (positions.length === 0) {
+            _initDefaultPositions();
+            positions = _getPositions();
+        }
+        return positions;
+    };
 
-    /**
-     * Lấy vị trí theo ID
-     */
     const getById = (id) => {
+        const positions = _getPositions();
         return positions.find(p => p.id === id);
     };
 
-    /**
-     * Thêm vị trí mới
-     * @param {string} title - Tên vị trí
-     * @param {string} description - Mô tả vị trí
-     * @param {number} salaryBase - Mức lương cơ bản
-     */
     const add = async (title, description = '', salaryBase = 0) => {
-        if (!title || title.trim().length === 0) {
-            throw new Error('Tên vị trí không được để trống!');
-        }
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                const positions = _getPositions();
 
-        if (salaryBase < 0) {
-            throw new Error('Mức lương cơ bản không được âm!');
-        }
+                if (!title || title.trim().length === 0) {
+                    resolve(null);
+                    return;
+                }
 
-        // Kiểm tra trùng tên
-        const exists = positions.find(p =>
-            p.title.toLowerCase() === title.trim().toLowerCase()
-        );
-        if (exists) {
-            throw new Error('Tên vị trí đã tồn tại!');
-        }
+                if (salaryBase < 0) {
+                    resolve(null);
+                    return;
+                }
 
-        const newId = positions.length ? Math.max(...positions.map(p => p.id)) + 1 : 1;
-        const newPosition = {
-            id: newId,
-            title: title.trim(),
-            description: description.trim(),
-            salaryBase
-        };
-        positions.push(newPosition);
-        await savePositions();
-        return newPosition;
+                const exists = positions.find(p =>
+                    p.title.toLowerCase() === title.trim().toLowerCase()
+                );
+                if (exists) {
+                    resolve(null);
+                    return;
+                }
+
+                const newId = positions.length ? Math.max(...positions.map(p => p.id)) + 1 : 1;
+                const newPosition = {
+                    id: newId,
+                    title: title.trim(),
+                    description: description.trim(),
+                    salaryBase
+                };
+
+                positions.push(newPosition);
+                _savePositions(positions);
+                resolve(newPosition);
+            }, 100);
+        });
     };
 
-    /**
-     * Sửa thông tin vị trí
-     * @param {number} id - ID vị trí cần sửa
-     * @param {object} updates - Object chứa các field cần update
-     */
-    const edit = async (id, updates) => {
-        const index = positions.findIndex(p => p.id === id);
-        if (index === -1) {
-            throw new Error('Không tìm thấy vị trí!');
-        }
+    const edit = async (id, titleOrUpdates, description, salaryBase) => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                const positions = _getPositions();
+                const index = positions.findIndex(p => p.id === id);
 
-        // Validate title nếu có update
-        if (updates.title) {
-            const trimmedTitle = updates.title.trim();
-            if (trimmedTitle.length === 0) {
-                throw new Error('Tên vị trí không được để trống!');
-            }
+                if (index === -1) {
+                    resolve(null);
+                    return;
+                }
 
-            // Kiểm tra trùng tên với vị trí khác
-            const duplicate = positions.find(p =>
-                p.id !== id && p.title.toLowerCase() === trimmedTitle.toLowerCase()
-            );
-            if (duplicate) {
-                throw new Error('Tên vị trí đã tồn tại!');
-            }
-        }
+                let updates;
+                if (typeof titleOrUpdates === 'object') {
+                    updates = titleOrUpdates;
+                } else {
+                    updates = {
+                        title: titleOrUpdates,
+                        description: description,
+                        salaryBase: salaryBase
+                    };
+                }
 
-        // Validate salaryBase nếu có update
-        if (updates.salaryBase !== undefined && updates.salaryBase < 0) {
-            throw new Error('Mức lương cơ bản không được âm!');
-        }
+                if (updates.title) {
+                    const trimmedTitle = updates.title.trim();
+                    if (trimmedTitle.length === 0) {
+                        resolve(null);
+                        return;
+                    }
 
-        // Cập nhật dữ liệu
-        positions[index] = {
-            ...positions[index],
-            ...updates,
-            id // Đảm bảo ID không bị thay đổi
-        };
-        await savePositions();
-        return positions[index];
+                    const duplicate = positions.find(p =>
+                        p.id !== id && p.title.toLowerCase() === trimmedTitle.toLowerCase()
+                    );
+                    if (duplicate) {
+                        resolve(null);
+                        return;
+                    }
+                }
+
+                if (updates.salaryBase !== undefined && updates.salaryBase < 0) {
+                    resolve(null);
+                    return;
+                }
+
+                positions[index] = {
+                    ...positions[index],
+                    ...updates,
+                    id
+                };
+
+                _savePositions(positions);
+                resolve(positions[index]);
+            }, 100);
+        });
     };
 
-    /**
-     * Xóa vị trí
-     * @param {number} id - ID vị trí cần xóa
-     */
     const remove = async (id) => {
-        const index = positions.findIndex(p => p.id === id);
-        if (index === -1) {
-            throw new Error('Không tìm thấy vị trí!');
-        }
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                const positions = _getPositions();
+                const index = positions.findIndex(p => p.id === id);
 
-        // Kiểm tra xem có nhân viên nào đang giữ vị trí này không
-        // (Optional - cần import EmployeeDbModule)
+                if (index === -1) {
+                    resolve(false);
+                    return;
+                }
 
-        positions.splice(index, 1);
-        await savePositions();
-        return true;
+                positions.splice(index, 1);
+                _savePositions(positions);
+                resolve(true);
+            }, 100);
+        });
     };
 
     return {

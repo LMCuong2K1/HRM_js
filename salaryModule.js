@@ -1,4 +1,5 @@
 // file: salaryModule.js
+
 import EmployeeDbModule from './EmployeeDbModule.js';
 import DepartmentModule from './departmentModule.js';
 import PositionModule from './positionModule.js';
@@ -6,8 +7,6 @@ import PositionModule from './positionModule.js';
 const SalaryModule = (() => {
     /**
      * Tính lương thực nhận cho một nhân viên.
-     * @param {object} employee - Đối tượng nhân viên.
-     * @returns {number} Lương thực nhận.
      */
     const calculateNetSalary = (employee) => {
         const bonus = employee.bonus || 0;
@@ -17,32 +16,38 @@ const SalaryModule = (() => {
     };
 
     /**
-     * Tạo báo cáo bảng lương cho tất cả nhân viên.
-     * @returns {Array} Mảng các đối tượng chứa thông tin chi tiết cho báo cáo.
+     * ✅ FIX CRITICAL: Accept optional employees parameter for testing
+     * @param {Array} employees - Optional: array of employees to generate report for
+     * If not provided, uses EmployeeDbModule.getAllEmployees()
      */
-    const generatePayrollReport = () => {
-        const employees = EmployeeDbModule.getAllEmployees();
-        const report = employees.map(emp => {
+    const generatePayrollReport = (employees = null) => {
+        // ✅ Use provided employees OR fetch from database
+        const employeeList = employees || EmployeeDbModule.getAllEmployees();
+
+        const report = employeeList.map(emp => {
             const department = DepartmentModule.getById(emp.departmentId);
             const position = PositionModule.getById(emp.positionId);
 
-            // Đảm bảo tất cả giá trị đều là số, không phải undefined
-            const salary = emp.salary || 0;
-            const bonus = emp.bonus || 0;
-            const deduction = emp.deduction || 0;
-            const netSalary = calculateNetSalary(emp);
+            // Ensure all values are numbers
+            const salary = typeof emp.salary === 'number' ? emp.salary : 0;
+            const bonus = typeof emp.bonus === 'number' ? emp.bonus : 0;
+            const deduction = typeof emp.deduction === 'number' ? emp.deduction : 0;
+
+            // ✅ Calculate netSalary
+            const netSalary = salary + bonus - deduction;
 
             return {
                 id: emp.id,
                 name: emp.name,
-                department: department ? department.name : 'N/A',
-                position: position ? position.title : 'N/A',
+                departmentName: department ? department.name : 'N/A',
+                positionTitle: position ? position.title : 'N/A',
                 salary: salary,
                 bonus: bonus,
                 deduction: deduction,
-                netSalary: netSalary
+                netSalary: netSalary  // ✅ MUST include this field
             };
         });
+
         return report;
     };
 

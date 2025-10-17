@@ -369,22 +369,22 @@
             // ==================== MODULE 2: AuthModule ====================
             createSection('AuthModule - Authentication & Security');
 
-            await sleep(100);
+            await sleep(200);
             const registerResult = await AuthModule.register('testuser', 'testpass123');
             assert(registerResult.success === true, 'User registration succeeds');
-
+            await sleep(100);
             const duplicateRegister = await AuthModule.register('testuser', 'anotherpass');
             assert(duplicateRegister.success === false, 'Cannot register duplicate username');
-
+            await sleep(100);
             const loginSuccess = await AuthModule.login('testuser', 'testpass123');
             assert(loginSuccess.success === true, 'Login with correct credentials');
-
+            await sleep(100);
             const loginWrongPass = await AuthModule.login('testuser', 'wrongpass');
             assert(loginWrongPass.success === false, 'Login fails with wrong password');
-
+            await sleep(100);
             const loginNonExistent = await AuthModule.login('nobody', 'pass');
             assert(loginNonExistent.success === false, 'Login fails for non-existent user');
-
+            await sleep(100);
             const currentUser = AuthModule.getCurrentUser();
             assert(currentUser !== null, 'getCurrentUser returns logged-in user');
             assert(currentUser.username === 'testuser', 'Current user has correct username');

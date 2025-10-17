@@ -1,54 +1,63 @@
 // file: departmentModule.js
+
 const DepartmentModule = (() => {
     const KEY = 'departments';
 
-    // Khởi tạo dữ liệu mặc định
-    let departments = JSON.parse(localStorage.getItem(KEY)) || [
+    // ✅ Default departments
+    const DEFAULT_DEPARTMENTS = [
         { id: 1, name: 'Kinh doanh', managerId: null },
         { id: 2, name: 'Kỹ thuật', managerId: null },
         { id: 3, name: 'Nhân sự', managerId: null }
     ];
 
-    // Lưu vào localStorage ngay khi khởi tạo nếu chưa có
-    if (!localStorage.getItem(KEY)) {
-        localStorage.setItem(KEY, JSON.stringify(departments));
-    }
+    // ✅ HELPER: Load departments FRESH
+    const _getDepartments = () => {
+        return JSON.parse(localStorage.getItem(KEY)) || [];
+    };
 
-    /**
-     * Lưu dữ liệu vào localStorage
-     */
-    const _saveDepartments = () => {
-        localStorage.setItem(KEY, JSON.stringify(departments));
+    // ✅ HELPER: Save departments
+    const _saveDepartments = (depts) => {
+        localStorage.setItem(KEY, JSON.stringify(depts));
+    };
+
+    // ✅ INIT: Default departments
+    const _initDefaultDepartments = () => {
+        const existing = _getDepartments();
+        if (existing.length === 0) {
+            _saveDepartments(DEFAULT_DEPARTMENTS);
+            console.log('✅ Đã khởi tạo 3 phòng ban mặc định');
+        }
     };
 
     /**
-     * Lấy tất cả phòng ban
+     * ✅ FIX: getAll() tự động init nếu empty
      */
-    const getAll = () => departments;
+    const getAll = () => {
+        let departments = _getDepartments();
+        if (departments.length === 0) {
+            _initDefaultDepartments();
+            departments = _getDepartments();
+        }
+        return departments;
+    };
 
-    /**
-     * Lấy phòng ban theo ID
-     */
     const getById = (id) => {
+        const departments = _getDepartments();
         return departments.find(d => d.id === id);
     };
 
-    /**
-     * Thêm phòng ban mới
-     * @param {string} name - Tên phòng ban
-     * @param {number|null} managerId - ID người quản lý (tùy chọn)
-     */
     const add = (name, managerId = null) => {
         if (!name || name.trim().length === 0) {
-            throw new Error('Tên phòng ban không được để trống!');
+            return null;
         }
 
-        // Kiểm tra trùng tên
+        const departments = _getDepartments();
+
         const exists = departments.find(d =>
             d.name.toLowerCase() === name.trim().toLowerCase()
         );
         if (exists) {
-            throw new Error('Tên phòng ban đã tồn tại!');
+            return null;
         }
 
         const newId = departments.length ? Math.max(...departments.map(d => d.id)) + 1 : 1;
@@ -57,72 +66,69 @@ const DepartmentModule = (() => {
             name: name.trim(),
             managerId
         };
+
         departments.push(newDept);
-        _saveDepartments();
+        _saveDepartments(departments);
         return newDept;
     };
 
-    /**
-     * Sửa thông tin phòng ban
-     * @param {number} id - ID phòng ban cần sửa
-     * @param {object} updates - Object chứa các field cần update
-     */
-    const edit = (id, updates) => {
+    const edit = (id, nameOrUpdates) => {
+        const departments = _getDepartments();
         const index = departments.findIndex(d => d.id === id);
+
         if (index === -1) {
-            throw new Error('Không tìm thấy phòng ban!');
+            return null;
         }
 
-        // Validate tên nếu có update
+        const updates = typeof nameOrUpdates === 'string'
+            ? { name: nameOrUpdates }
+            : nameOrUpdates;
+
         if (updates.name) {
             const trimmedName = updates.name.trim();
             if (trimmedName.length === 0) {
-                throw new Error('Tên phòng ban không được để trống!');
+                return null;
             }
 
-            // Kiểm tra trùng tên với phòng ban khác
             const duplicate = departments.find(d =>
                 d.id !== id && d.name.toLowerCase() === trimmedName.toLowerCase()
             );
             if (duplicate) {
-                throw new Error('Tên phòng ban đã tồn tại!');
+                return null;
             }
         }
 
-        // Cập nhật dữ liệu
         departments[index] = {
             ...departments[index],
             ...updates,
-            id // Đảm bảo ID không bị thay đổi
+            id
         };
-        _saveDepartments();
+
+        _saveDepartments(departments);
         return departments[index];
     };
 
-    /**
-     * Xóa phòng ban
-     * @param {number} id - ID phòng ban cần xóa
-     * @returns {boolean} - true nếu xóa thành công
-     */
-    const remove = (id) => {
+    const deleteDept = (id) => {
+        const departments = _getDepartments();
         const index = departments.findIndex(d => d.id === id);
+
         if (index === -1) {
-            throw new Error('Không tìm thấy phòng ban!');
+            return false;
         }
 
-        // Kiểm tra xem có nhân viên nào thuộc phòng ban này không
-        // (Cần import EmployeeDbModule nếu muốn kiểm tra - optional)
-
         departments.splice(index, 1);
-        _saveDepartments();
+        _saveDepartments(departments);
         return true;
     };
+
+    const remove = (id) => deleteDept(id);
 
     return {
         getAll,
         getById,
         add,
         edit,
+        delete: deleteDept,
         remove
     };
 })();
