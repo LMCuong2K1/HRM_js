@@ -191,8 +191,6 @@ function handleDelete(id) {
   }
 }
 
-const searchInput = document.getElementById('searchInput');
-
 searchInput.addEventListener('input', (e) => {
   const searchTerm = e.target.value.toLowerCase();
   const allEmployees = EmployeeDbModule.getAllEmployees();
