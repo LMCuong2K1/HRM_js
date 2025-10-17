@@ -663,13 +663,13 @@ const initSalaryView = () => {
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Tên</th>
-                        <th>Phòng ban</th>
-                        <th>Vị trí</th>
-                        <th>Lương CB</th>
-                        <th>Thưởng</th>
-                        <th>Khấu trừ</th>
-                        <th>Thực nhận</th>
+                        <th>TÊN</th>
+                        <th>PHÒNG BAN</th>
+                        <th>VỊ TRÍ</th>
+                        <th>LƯƠNG CB</th>
+                        <th>THƯỞNG</th>
+                        <th>KHẤU TRỪ</th>
+                        <th>THỰC NHẬN</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -677,18 +677,18 @@ const initSalaryView = () => {
                         <tr>
                             <td>${r.id}</td>
                             <td>${r.name}</td>
-                            <td>${r.department}</td>
-                            <td>${r.position}</td>
+                            <td>${r.departmentName || 'N/A'}</td>     <!--✅ FIX: departmentName -->
+                            <td>${r.positionTitle || 'N/A'}</td>      <!--✅ FIX: positionTitle -->
                             <td>${(r.salary || 0).toLocaleString('vi-VN')}</td>
                             <td>${(r.bonus || 0).toLocaleString('vi-VN')}</td>
                             <td>${(r.deduction || 0).toLocaleString('vi-VN')}</td>
-                            <td><strong>${(r.netSalary || 0).toLocaleString('vi-VN')}</strong> VNĐ</td>
+                            <td><strong>${(r.netSalary || 0).toLocaleString('vi-VN')}</strong> VND</td>
                         </tr>
                     `).join('')}
                 </tbody>
             </table>
             <div class="summary">
-                <h4>Tổng chi phí lương: ${report.reduce((sum, r) => sum + (r.netSalary || 0), 0).toLocaleString('vi-VN')} VNĐ</h4>
+                <h4>Tổng chi phí lương: ${report.reduce((sum, r) => sum + (r.netSalary || 0), 0).toLocaleString('vi-VN')} VND</h4>
             </div>
         `;
     } catch (error) {
@@ -696,6 +696,7 @@ const initSalaryView = () => {
         container.innerHTML = `<p class="error">Có lỗi xảy ra khi tạo bảng lương: ${error.message}</p>`;
     }
 };
+
 
 
 /**
