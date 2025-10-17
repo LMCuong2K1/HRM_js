@@ -6,6 +6,7 @@ import SearchModule from './searchModule.js';
 import SalaryModule from './salaryModule.js';
 import DeleteEmployeeModule from './deleteEmployeeModule.js';
 import EmployeeFormModule from './employeeFormModule.js';
+import AttendanceModule from './attendanceModule.js';
 
 // --- PHẦN 1: LẤY CÁC DOM ELEMENT TOÀN CỤC ---
 const authContainer = document.getElementById('auth-container');
@@ -177,6 +178,72 @@ const initEmployeesView = () => {
 };
 
 /**
+ * Khởi tạo giao diện cho module Chấm công.
+ */
+const initAttendanceView = () => {
+    const container = document.getElementById('attendance-view');
+    container.innerHTML = `<h3>Quản lý Chấm công</h3>`;
+
+    const employees = EmployeeDbModule.getAllEmployees();
+    const attendanceLog = AttendanceModule.getLog();
+    const today = new Date().toLocaleDateString('vi-VN');
+
+    const table = document.createElement('table');
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Tên Nhân viên</th>
+                <th>Trạng thái hôm nay</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    `;
+    const tbody = table.querySelector('tbody');
+
+    employees.forEach(emp => {
+        const logToday = attendanceLog.find(log => log.employeeId === emp.id && log.date === today);
+
+        let status = 'Chưa chấm công';
+        if (logToday && logToday.checkIn && !logToday.checkOut) {
+            status = `Đã check-in lúc ${new Date(logToday.checkIn).toLocaleTimeString()}`;
+        } else if (logToday && logToday.checkOut) {
+            status = 'Đã hoàn thành chấm công';
+        }
+
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td>${emp.name}</td>
+            <td>${status}</td>
+            <td>
+                <button class="check-in-btn" data-id="${emp.id}">Check-in</button>
+                <button class="check-out-btn" data-id="${emp.id}">Check-out</button>
+            </td>
+        `;
+    });
+
+    container.appendChild(table);
+
+    // Gán sự kiện cho các nút check-in/check-out
+    container.querySelectorAll('.check-in-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const empId = parseInt(e.target.dataset.id);
+            AttendanceModule.checkIn(empId);
+            initAttendanceView(); // Render lại để cập nhật trạng thái
+        });
+    });
+
+    container.querySelectorAll('.check-out-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const empId = parseInt(e.target.dataset.id);
+            AttendanceModule.checkOut(empId);
+            initAttendanceView(); // Render lại
+        });
+    });
+};
+
+
+/**
  * Khởi tạo giao diện cho module Báo cáo Lương.
  */
 const initSalaryView = () => {
@@ -339,6 +406,9 @@ const activateView = (viewId) => {
                 break;
             case 'salary-view':
                 initSalaryView();
+                break;
+            case 'attendance-view':
+                initAttendanceView();
                 break;
             // Thêm các case khác cho module tương lai
         }
