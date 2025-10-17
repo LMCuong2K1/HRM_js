@@ -30,5 +30,5 @@
 2. Mở file `index.html` bằng Live Server hoặc browser
 
 ## Tài khoản demo
-- Username: 
-- Password: 
+- Username: `admin`
+- Password: `12345`
