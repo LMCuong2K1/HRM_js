@@ -1,6 +1,7 @@
 import AuthModule from "./authModule.js";
 import EmployeeDbModule from "./EmployeeDbModule.js";
 import DepartmentModule from './departmentModule.js';
+import PositionModule from './positionModule.js';
 
 // --- PHẦN 1: LẤY CÁC DOM ELEMENT TOÀN CỤC ---
 const authContainer = document.getElementById('auth-container');
@@ -181,6 +182,56 @@ const initDepartmentsView = () => {
     refreshList();
 };
 
+/**
+ * Khởi tạo giao diện và gán sự kiện cho module Quản lý Vị trí.
+ */
+const initPositionsView = () => {
+  const container = document.getElementById('positions-view');
+  if (container.innerHTML.trim() !== '') return;
+
+  container.innerHTML = `
+      <h3>Quản lý Vị trí</h3>
+      <form id="pos-form">
+          <input type="text" id="pos-title" placeholder="Tên vị trí mới" required />
+          <button type="submit">Thêm Vị trí</button>
+      </form>
+      <ul id="pos-list"></ul>
+  `;
+
+  const listEl = container.querySelector('#pos-list');
+  const formEl = container.querySelector('#pos-form');
+  const titleInput = container.querySelector('#pos-title');
+  const submitBtn = formEl.querySelector('button');
+
+  const refreshList = () => {
+      listEl.innerHTML = '';
+      PositionModule.getAll().forEach(pos => {
+          const li = document.createElement('li');
+          li.textContent = `ID: ${pos.id} - ${pos.title}`;
+          listEl.appendChild(li);
+      });
+  };
+
+  formEl.onsubmit = async (e) => {
+      e.preventDefault();
+      const newTitle = titleInput.value.trim();
+      if (newName) {
+          submitBtn.textContent = 'Đang lưu...';
+          submitBtn.disabled = true;
+
+          await PositionModule.add(newTitle);
+          
+          titleInput.value = '';
+          submitBtn.textContent = 'Thêm Vị trí';
+          submitBtn.disabled = false;
+          refreshList();
+      }
+  };
+
+  refreshList();
+};
+
+
 // --- PHẦN 3: ROUTER VÀ CÁC HÀM ĐIỀU KHIỂN CHÍNH ---
 
 /**
@@ -201,6 +252,9 @@ const activateView = (viewId) => {
                 break;
             case 'departments-view':
                 initDepartmentsView();
+                break;
+              case 'positions-view': // CASE MỚI
+                initPositionsView();
                 break;
             // Thêm các case khác cho module tương lai
         }
